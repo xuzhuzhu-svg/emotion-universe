@@ -208,7 +208,7 @@
         <label class="switch"><input id="cfg-use" type="checkbox" /><span class="slider"></span></label>
       </div>
       <button class="primary" id="cfg-save">保存设置</button>
-      <div class="panel-note">⚠️ <b>跨域提醒</b>：DeepSeek / OpenAI / Kimi <b>不允许网页在浏览器里直连</b>（会被 CORS 拦截，文案仍走本地库）。想让 AI 真正生成文案，请用 <b>OpenRouter</b>（openrouter.ai 免费注册，浏览器直连可用）或 <b>SiliconFlow</b>；也可在「自定义地址」填一个支持 CORS 的中转 / Cloudflare 代理（见 README）。任何失败都会自动回退本地文案，不影响使用。</div>
+      <div class="panel-note">⚠️ <b>跨域提醒</b>：DeepSeek / OpenAI / Kimi <b>不允许网页在浏览器里直连</b>（会被 CORS 拦截，文案仍走本地库）。想让 AI 真正生成文案，请用 <b>OpenRouter</b>（openrouter.ai 免费注册，浏览器直连可用）或 <b>SiliconFlow</b>；也可在「自定义地址」填一个支持 CORS 的中转 / Cloudflare 代理（见 README）。<b>OpenRouter 留空模型名会自动用免费的 MiniMax 模型</b>，任何失败都会自动回退本地文案，不影响使用。</div>
     </div>
   </div>
 
@@ -417,7 +417,7 @@ function llmEndpoint() {
 }
 function llmModelName() {
   if (CONFIG.llmModel) return CONFIG.llmModel;
-  return ({ openai: "gpt-4o-mini", kimi: "moonshot-v1-8k", deepseek: "deepseek-chat", openrouter: "deepseek/deepseek-chat", siliconflow: "Qwen/Qwen2.5-7B-Instruct" })[CONFIG.llmProvider] || "gpt-4o-mini";
+  return ({ openai: "gpt-4o-mini", kimi: "moonshot-v1-8k", deepseek: "deepseek-chat", openrouter: "minimax/minimax-m3:free", siliconflow: "Qwen/Qwen2.5-7B-Instruct" })[CONFIG.llmProvider] || "gpt-4o-mini";
 }
 async function callLLM(messages) {
   let res;
