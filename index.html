@@ -10,6 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="apple-touch-icon" href="icon-512.png" />
+<link rel="icon" href="icon-512.png" />
 <style>
   :root {
     --bg-top: #161009;        /* 极暗暖棕（照片暗部 #2e281d 压暗） */
@@ -389,7 +390,6 @@ function drawRain(intensity) { const n = Math.floor(rainDrops.length * intensity
 function drawAurora(intensity) { ctx.save(); ctx.globalCompositeOperation = "lighter"; const bands = [{ y: H*0.12, col: "120,255,200", amp: 26 },{ y: H*0.18, col: "160,180,255", amp: 34 },{ y: H*0.24, col: "200,150,255", amp: 22 }]; const t = Date.now()/2600; for (const b of bands) { ctx.beginPath(); for (let x = 0; x <= W; x += 12) { const y = b.y + Math.sin(x/160 + t)*b.amp + Math.sin(x/70 - t*1.4)*8; x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } const g = ctx.createLinearGradient(0, b.y - 40, 0, b.y + 40); g.addColorStop(0, `rgba(${b.col},0)`); g.addColorStop(0.5, `rgba(${b.col},${0.12*intensity})`); g.addColorStop(1, `rgba(${b.col},0)`); ctx.strokeStyle = g; ctx.lineWidth = 50; ctx.stroke(); } ctx.restore(); }
 function launchFirework(x, y) { const palette = ["#ff6b9d","#ffd86b","#8fd3ff","#b6ff9d","#d99dff","#ff9d6b"]; const color = palette[Math.floor(Math.random()*palette.length)]; const count = 64 + Math.floor(Math.random()*32), parts = []; for (let i = 0; i < count; i++) { const ang = Math.random()*Math.PI*2, sp = 1 + Math.random()*4.2; parts.push({ x, y, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp, life: 1, decay: 0.012+Math.random()*0.01, color }); } fireworks.push({ parts }); }
 function updateFireworks() { for (const fw of fireworks) { for (const p of fw.parts) { p.x += p.vx; p.y += p.vy; p.vy += 0.03; p.vx *= 0.985; p.vy *= 0.985; p.life -= p.decay; if (p.life > 0) { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill(); } } fw.parts = fw.parts.filter(p => p.life > 0); } fireworks = fireworks.filter(fw => fw.parts.length > 0); ctx.globalAlpha = 1; }
-loop();
 function spawnMeteor(x, y) { meteor = { x, y, vx: (Math.random()-0.5)*1.2, vy: -3, trail: [] }; }
 function bloomFlower() {
   const layer = document.getElementById("flower-layer"); const NS = "http://www.w3.org/2000/svg", size = 260; const svg = document.createElementNS(NS, "svg"); svg.setAttribute("width", size); svg.setAttribute("height", size); svg.setAttribute("viewBox", "0 0 100 100"); svg.classList.add("bloom");
@@ -744,6 +744,7 @@ document.querySelector(".footer-note").addEventListener("dblclick", () => {
   saveSelf(selfState); computeWeather(); hint.textContent = "已填充 7 天示例 · 观察天气与星座"; setTimeout(() => hint.textContent = defaultHint, 4200);
 });
 input.focus();
+loop(); // 启动动画循环：必须放在所有 const/函数定义之后，否则 drawHistory 会触碰尚未初始化的 THEME_LABEL（TDZ），导致后续事件绑定全流产、整页点不动
 
 /* ---------- PWA：注册 Service Worker（可添加到主屏 / 离线打开） ---------- */
 if ("serviceWorker" in navigator) {

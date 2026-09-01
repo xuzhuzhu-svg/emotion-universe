@@ -1,5 +1,5 @@
 /* 情绪宇宙 Service Worker · 让页面可离线 / 添加到主屏 */
-const CACHE = "eu-v1";
+const CACHE = "eu-v2";
 const ASSETS = ["index.html", "manifest.webmanifest", "icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -10,7 +10,12 @@ self.addEventListener("install", e => {
 });
 
 self.addEventListener("activate", e => {
-  e.waitUntil(self.clients.claim());
+  // 删掉旧版本缓存，避免旧的（有 bug 的）index.html 被继续命中
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener("fetch", e => {
