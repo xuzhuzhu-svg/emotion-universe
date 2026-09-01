@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>情绪宇宙 · Emotion Universe</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#050510" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="apple-touch-icon" href="icon-512.png" />
+<style>
+  :root { --bg-top: #050510; --bg-bottom: #0a0a24; --ink: rgba(255,255,255,0.92); --ink-soft: rgba(255,255,255,0.5); --glow: #8fd3ff; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: "PingFang SC","Microsoft YaHei","Helvetica Neue",system-ui,sans-serif; background: radial-gradient(ellipse at 50% 18%, var(--bg-bottom), var(--bg-top) 72%); color: var(--ink); -webkit-font-smoothing: antialiased; transition: background 1.2s ease; }
+  #stars { position: fixed; inset: 0; z-index: 0; }
+  #controls { position: fixed; top: 14px; right: 16px; z-index: 6; display: flex; gap: 8px; }
+  #controls button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05); color: var(--ink); font-size: 15px; cursor: pointer; backdrop-filter: blur(8px); opacity: 0.5; transition: all 0.25s; }
+  #controls button:hover { opacity: 1; }
+  #hud { position: fixed; top: 16px; left: 0; right: 0; z-index: 6; text-align: center; font-size: 13px; letter-spacing: 0.12em; color: var(--ink-soft); pointer-events: none; transition: opacity 0.3s; }
+  #hud span { pointer-events: auto; cursor: pointer; padding: 4px 10px; border-radius: 999px; }
+  #hud span:hover { color: var(--ink); background: rgba(255,255,255,0.06); }
+  .garden { position: fixed; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; pointer-events: none; }
+  .garden > * { pointer-events: auto; }
+  .greeting { font-size: clamp(15px,2.4vw,19px); font-weight: 300; color: var(--ink-soft); letter-spacing: 0.12em; margin-bottom: 26px; min-height: 24px; transition: opacity 1s; }
+  .breath { width: 14px; height: 14px; border-radius: 50%; background: rgba(143,211,255,0.85); box-shadow: 0 0 22px rgba(143,211,255,0.7); animation: breath 3.4s ease-in-out infinite; cursor: pointer; margin-bottom: 28px; }
+  @keyframes breath { 0%,100% { transform: scale(0.7); opacity: 0.35; } 50% { transform: scale(1.15); opacity: 0.95; } }
+  .input-row { position: relative; width: min(560px, 90vw); display: flex; gap: 8px; }
+  #emotion { flex: 1; padding: 15px 22px; font-size: 16px; color: var(--ink); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; outline: none; backdrop-filter: blur(8px); text-align: center; letter-spacing: 0.04em; opacity: 0.55; transition: all 0.35s; }
+  #emotion::placeholder { color: rgba(255,255,255,0.3); }
+  #emotion:focus { opacity: 1; border-color: rgba(143,211,255,0.6); box-shadow: 0 0 0 4px rgba(143,211,255,0.12), 0 0 40px rgba(143,211,255,0.18); background: rgba(255,255,255,0.08); }
+  .icon-btn { flex: 0 0 auto; width: 50px; height: 50px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.05); color: var(--ink); font-size: 20px; cursor: pointer; backdrop-filter: blur(8px); transition: all 0.2s; user-select: none; -webkit-user-select: none; display: flex; align-items: center; justify-content: center; }
+  #voice:active, #voice.listening { background: rgba(255,90,120,0.22); border-color: rgba(255,120,140,0.7); box-shadow: 0 0 24px rgba(255,90,120,0.4); transform: scale(0.94); }
+  #voice.disabled { opacity: 0.35; cursor: not-allowed; }
+  #firework-btn:active { transform: scale(0.92); background: rgba(255,200,120,0.18); }
+  .hint { margin-top: 16px; font-size: 13px; color: var(--ink-soft); min-height: 20px; letter-spacing: 0.08em; transition: opacity 0.4s; }
+  .content { margin-top: 12px; max-width: min(520px, 88vw); font-size: 13.5px; line-height: 1.8; color: rgba(255,255,255,0.78); font-style: italic; letter-spacing: 0.03em; opacity: 0; transition: opacity 1.2s; min-height: 22px; }
+  .content.show { opacity: 1; }
+  .footer-note { position: fixed; bottom: 14px; left: 0; right: 0; z-index: 3; text-align: center; font-size: 11px; color: rgba(255,255,255,0.25); letter-spacing: 0.1em; pointer-events: auto; cursor: default; }
+  #flower-layer { position: fixed; inset: 0; z-index: 2; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+  .bloom { animation: bloom 0.9s cubic-bezier(.2,.8,.3,1) forwards; transform-origin: center; }
+  @keyframes bloom { 0% { transform: scale(0) rotate(-40deg); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+  .fade-out { animation: fade 1.2s ease forwards; }
+  @keyframes fade { to { opacity: 0; } }
+  .overlay { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: rgba(4,6,16,0.78); backdrop-filter: blur(10px); padding: 24px; }
+  .overlay.hidden { display: none; }
+  .card { width: min(640px, 94vw); max-height: 88vh; overflow-y: auto; background: rgba(20,24,44,0.92); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 30px 28px; box-shadow: 0 20px 80px rgba(0,0,0,0.5); }
+  .card h2 { font-weight: 300; letter-spacing: 0.12em; margin-bottom: 6px; font-size: 22px; }
+  .card .sub { color: var(--ink-soft); font-size: 13px; margin-bottom: 22px; letter-spacing: 0.06em; }
+  .quiz-q { margin-bottom: 22px; }
+  .quiz-q .qt { font-size: 15px; margin-bottom: 12px; letter-spacing: 0.04em; }
+  .opts { display: flex; flex-wrap: wrap; gap: 10px; }
+  .opt { padding: 10px 18px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.04); cursor: pointer; font-size: 14px; transition: all 0.2s; letter-spacing: 0.04em; }
+  .opt:hover { border-color: rgba(143,211,255,0.5); }
+  .opt.sel { background: rgba(143,211,255,0.18); border-color: rgba(143,211,255,0.7); color: #fff; }
+  .primary { margin-top: 8px; width: 100%; padding: 14px; border-radius: 999px; border: none; cursor: pointer; background: linear-gradient(120deg, rgba(143,211,255,0.9), rgba(180,150,255,0.9)); color: #04101e; font-size: 15px; letter-spacing: 0.1em; font-weight: 500; }
+  .primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .planet-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; background: rgba(255,255,255,0.03); }
+  .planet-row .pn { font-size: 15px; }
+  .planet-row .pm { font-size: 11px; color: var(--ink-soft); margin-top: 3px; }
+  .planet-row .acts { display: flex; gap: 8px; }
+  .planet-row .acts button { padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.05); color: var(--ink); cursor: pointer; font-size: 12px; }
+  .planet-row.active { border-color: rgba(143,211,255,0.6); background: rgba(143,211,255,0.08); }
+  .panel-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .panel-actions button { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.05); color: var(--ink); cursor: pointer; font-size: 13px; }
+  .hint-box { font-size: 12px; color: var(--ink-soft); margin-top: 14px; line-height: 1.7; letter-spacing: 0.03em; }
+  textarea#importer { width: 100%; height: 70px; margin-top: 10px; background: rgba(0,0,0,0.3); color: var(--ink); border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; padding: 10px; font-size: 12px; resize: none; }
+  .row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .row label { font-size: 13px; width: 92px; color: var(--ink-soft); letter-spacing: 0.04em; flex: 0 0 auto; }
+  .row input, .row select { flex: 1; padding: 10px 12px; background: rgba(0,0,0,0.3); color: var(--ink); border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; font-size: 13px; min-width: 0; }
+  .row input:focus, .row select:focus { outline: none; border-color: rgba(143,211,255,0.6); }
+  .switch { position: relative; width: 46px; height: 26px; flex: 0 0 auto; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; inset: 0; background: rgba(255,255,255,0.12); border-radius: 999px; cursor: pointer; transition: .25s; }
+  .slider:before { content: ""; position: absolute; height: 20px; width: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .25s; }
+  .switch input:checked + .slider { background: rgba(143,211,255,0.7); }
+  .switch input:checked + .slider:before { transform: translateX(20px); }
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0; }
+  .stat { text-align: center; padding: 16px 8px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); }
+  .stat .num { font-size: 28px; font-weight: 300; color: var(--glow); }
+  .stat .lab { font-size: 11px; color: var(--ink-soft); margin-top: 6px; letter-spacing: 0.08em; }
+  .poem { font-size: 16px; line-height: 1.9; color: rgba(255,255,255,0.85); font-style: italic; text-align: center; margin: 8px 0 4px; letter-spacing: 0.04em; }
+  .theme-block { margin-bottom: 18px; }
+  .theme-block h3 { font-size: 14px; font-weight: 400; color: var(--glow); margin-bottom: 10px; letter-spacing: 0.08em; }
+  .tl-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 13px; line-height: 1.5; }
+  .tl-item .dot { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; }
+  .tl-item .meta { font-size: 11px; color: var(--ink-soft); margin-right: 8px; flex: 0 0 auto; width: 64px; }
+  .tl-item .txt { flex: 1; }
+  .empty-tip { text-align: center; color: var(--ink-soft); font-size: 13px; padding: 30px 0; }
+  .close-x { float: right; cursor: pointer; color: var(--ink-soft); font-size: 18px; line-height: 1; }
+  .close-x:hover { color: var(--ink); }
+  .panel-note { font-size: 11.5px; color: var(--ink-soft); line-height: 1.7; margin-top: 6px; }
+</style>
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <div id="flower-layer"></div>
+  <div id="hud"></div>
+  <div id="controls">
+    <button id="mute" title="静音 / 取消静音">🔊</button>
+    <button id="summary" title="本周情绪小结">🌿</button>
+    <button id="constellation" title="我的星座时间线">📜</button>
+    <button id="settings" title="设置（接入大模型）">⚙️</button>
+    <button id="export" title="导出当前星球">📤</button>
+    <button id="planets" title="星球 · 分享 · 导入">👥</button>
+    <button id="reset" title="重置当前星球">🗑</button>
+  </div>
+  <div class="garden">
+    <div class="greeting" id="greeting"></div>
+    <div class="breath" id="breath" title="点一下，开始书写"></div>
+    <div class="input-row">
+      <input id="emotion" type="text" autocomplete="off" placeholder="此刻，你心里装着什么？" />
+      <button id="voice" class="icon-btn" title="按住说话">🎙</button>
+      <button id="firework-btn" class="icon-btn" title="放一朵烟花">🎆</button>
+    </div>
+    <div class="hint" id="hint">按 Enter 释放它 · 按住 🎙 说出口 · 点 🎆 放烟花</div>
+    <div class="content" id="content"></div>
+  </div>
+  <div class="footer-note">EMOTION UNIVERSE · 本地存储，数据只属于你 · 双击此行可填充 7 天示例</div>
+
+  <div class="overlay hidden" id="onboarding">
+    <div class="card">
+      <h2>先为你的宇宙定个调</h2>
+      <div class="sub">几个小问题，让我读懂你喜欢的样子。没有标准答案，凭直觉选。</div>
+      <div id="quiz"></div>
+      <button class="primary" id="quiz-done" disabled>进入我的宇宙 →</button>
+    </div>
+  </div>
+  <div class="overlay hidden" id="planet-panel">
+    <div class="card">
+      <h2>星球</h2>
+      <div class="sub">切换查看，或把宇宙分享给朋友。朋友打开你的链接，她的天气与星图就住进了你的世界。</div>
+      <div id="planet-list"></div>
+      <div class="panel-actions">
+        <button id="share-me">🔗 分享我的宇宙</button>
+        <button id="import-me">📥 导入朋友星球</button>
+        <button id="redefine">✨ 重设我的宇宙</button>
+      </div>
+      <div id="import-area" class="hidden">
+        <textarea id="importer" placeholder="把朋友发来的分享码粘贴到这里…"></textarea>
+        <button class="primary" id="do-import" style="margin-top:10px">导入这颗星球</button>
+      </div>
+      <div class="hint-box">说明：纯前端无法跨设备实时同步。你分享的是「此刻宇宙的快照」——朋友更新后重新分享，你再导入即可看到她最新的雨、花与烟花。架构已为接入后端实时同步预留接口。</div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="summary-panel">
+    <div class="card">
+      <span class="close-x" data-close="summary-panel">×</span>
+      <h2>本周情绪小结</h2>
+      <div class="sub">过去 7 天，你的宇宙发生了什么。</div>
+      <div class="stat-grid" id="summary-stats"></div>
+      <div class="poem" id="summary-poem"></div>
+      <div class="panel-note" id="summary-note"></div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="constellation-panel">
+    <div class="card">
+      <span class="close-x" data-close="constellation-panel">×</span>
+      <h2>我的星座时间线</h2>
+      <div class="sub">同一主题的星被连成了线——原来你早就跨越过很多次。</div>
+      <div id="constellation-list"></div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="settings-panel">
+    <div class="card">
+      <span class="close-x" data-close="settings-panel">×</span>
+      <h2>设置 · 接入大模型</h2>
+      <div class="sub">填好密钥后，治愈文案会变成 AI 真实生成的「嘴替 / 微童话」。留空则用本地文案库。</div>
+      <div class="row"><label>大模型</label>
+        <select id="cfg-provider">
+          <option value="deepseek">DeepSeek</option>
+          <option value="openai">OpenAI</option>
+          <option value="kimi">Kimi（月之暗面）</option>
+        </select>
+      </div>
+      <div class="row"><label>API Key</label><input id="cfg-key" type="password" placeholder="粘贴你的密钥" autocomplete="off" /></div>
+      <div class="row"><label>模型名</label><input id="cfg-model" type="text" placeholder="留空则用该平台默认模型" /></div>
+      <div class="row"><label>自定义地址</label><input id="cfg-base" type="text" placeholder="兼容 OpenAI 格式，留空用官方地址" /></div>
+      <div class="row"><label>启用大模型</label>
+        <label class="switch"><input id="cfg-use" type="checkbox" /><span class="slider"></span></label>
+      </div>
+      <button class="primary" id="cfg-save">保存设置</button>
+      <div class="panel-note">浏览器直连大模型接口可能受跨域（CORS）限制：若保存后文案仍不更新，多半是该平台不允许浏览器直接调用。可把「自定义地址」填成支持 CORS 的中转或自建代理。任何失败都会自动回退本地文案，不影响正常使用。</div>
+    </div>
+  </div>
+
+<script>
+/* 情绪宇宙 v4 · 单文件（无后端 / 轻量 Canvas）
+   ① 状态 ② 自定义宇宙问卷 ③ 星空+天气 ④ 历史星图(星座+标签)
+   ⑤ 情绪识别+细分 ⑥ 语音/留白 ⑦ 动画(流星/花/烟花/伴星/花苞春雨)
+   ⑧ 音效 ⑨ 治愈内容推送 ⑩ 分享/导入/切换 ⑪ 导出/重置 */
+const CONFIG = { useLLM: false, llmProvider: "deepseek", apiKey: "", llmModel: "", llmBaseUrl: "", meteorColor: "180,190,205", bloomColor: "#ffd6f0", historyVisible: true };
+const KEY_CFG = "eu-cfg";
+function loadCfg() { try { const c = JSON.parse(localStorage.getItem(KEY_CFG)); if (c) Object.assign(CONFIG, c); } catch (e) {} }
+function saveCfg() { localStorage.setItem(KEY_CFG, JSON.stringify({ useLLM: CONFIG.useLLM, llmProvider: CONFIG.llmProvider, apiKey: CONFIG.apiKey, llmModel: CONFIG.llmModel, llmBaseUrl: CONFIG.llmBaseUrl })); }
+const KEY_SELF = "eu-self", KEY_FRIENDS = "eu-friends", KEY_SEEN = "emotion-universe-seen";
+
+/* ---------- ① 状态 ---------- */
+function loadSelf() { try { return JSON.parse(localStorage.getItem(KEY_SELF)) || { setting: null, records: [], companionCount: 0, budGrowth: 0 }; } catch (e) { return { setting: null, records: [], companionCount: 0, budGrowth: 0 }; } }
+function saveSelf(s) { localStorage.setItem(KEY_SELF, JSON.stringify(s)); }
+function loadFriends() { try { return JSON.parse(localStorage.getItem(KEY_FRIENDS)) || []; } catch (e) { return []; } }
+function saveFriends(f) { localStorage.setItem(KEY_FRIENDS, JSON.stringify(f)); }
+let selfState = loadSelf(); let friends = loadFriends(); let currentView = "self";
+function viewRecords() { if (currentView === "self") return selfState.records; const f = friends.find(x => x.id === currentView); return f ? f.records : selfState.records; }
+function viewSetting() { if (currentView === "self") return selfState.setting; const f = friends.find(x => x.id === currentView); return f ? f.setting : selfState.setting; }
+function viewName() { if (currentView === "self") return "我的宇宙"; const f = friends.find(x => x.id === currentView); return f ? f.name + "的星球" : "我的宇宙"; }
+
+/* ---------- ② 自定义宇宙问卷 ---------- */
+const QUIZ = [
+  { key: "weather", q: "如果情绪有天气，你最想常驻哪一种？", opts: [["晴天","sunny"],["阴天","cloudy"],["雨天","rainy"],["雪天","snowy"]] },
+  { key: "night", q: "深夜独处，你更想…", opts: [["看星空","stars"],["听雨声","rain"],["点一盏暖灯","lamp"],["散步吹风","wind"]] },
+  { key: "light", q: "用一种光形容你，是？", opts: [["暖阳","warm"],["冷月","moon"],["萤火","fire"],["极光","aurora"]] },
+  { key: "mood", q: "你希望这个宇宙…", opts: [["热闹一点","lively"],["安静一点","quiet"]] }
+];
+const answers = {};
+function renderQuiz() {
+  const box = document.getElementById("quiz"); box.innerHTML = "";
+  QUIZ.forEach(q => {
+    const wrap = document.createElement("div"); wrap.className = "quiz-q"; wrap.innerHTML = `<div class="qt">${q.q}</div>`;
+    const opts = document.createElement("div"); opts.className = "opts";
+    q.opts.forEach(([label, val]) => {
+      const o = document.createElement("div"); o.className = "opt"; o.textContent = label;
+      o.onclick = () => { answers[q.key] = val; [...opts.children].forEach(c => c.classList.remove("sel")); o.classList.add("sel"); document.getElementById("quiz-done").disabled = QUIZ.some(qq => !answers[qq.key]); };
+      opts.appendChild(o);
+    });
+    wrap.appendChild(opts); box.appendChild(wrap);
+  });
+}
+function openOnboarding() { Object.keys(answers).forEach(k => delete answers[k]); renderQuiz(); document.getElementById("quiz-done").disabled = true; document.getElementById("onboarding").classList.remove("hidden"); }
+document.getElementById("quiz-done").onclick = () => { selfState.setting = { ...answers }; saveSelf(selfState); document.getElementById("onboarding").classList.add("hidden"); applySetting(); computeWeather(); hint.textContent = "宇宙已成形，开始书写吧 ✦"; setTimeout(() => hint.textContent = defaultHint, 3500); };
+const WEATHER_BG = { sunny: ["#0a0f24","#1a1530"], cloudy: ["#0a0c12","#1a1d24"], rainy: ["#05080f","#0c1620"], snowy: ["#0a0e16","#1a2230"] };
+const LIGHT_GLOW = { warm: "#ffd6a0", moon: "#9fc4ff", fire: "#ffd86b", aurora: "#8fffd0" };
+let params = { starCount: 240, ambientRain: 0, warmGlow: false };
+function applySetting() {
+  const s = viewSetting() || { weather: "sunny", light: "moon", night: "stars", mood: "lively" };
+  const bg = WEATHER_BG[s.weather] || WEATHER_BG.sunny, glow = LIGHT_GLOW[s.light] || LIGHT_GLOW.moon;
+  document.documentElement.style.setProperty("--bg-top", bg[0]); document.documentElement.style.setProperty("--bg-bottom", bg[1]); document.documentElement.style.setProperty("--glow", glow);
+  params.starCount = s.mood === "quiet" ? 130 : 260; params.ambientRain = (s.night === "rain") ? 0.22 : 0; params.warmGlow = s.night === "lamp"; rebuildStars();
+}
+function rebuildStars() { stars.length = 0; for (let i = 0; i < params.starCount; i++) stars.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*1.4+0.3, a: Math.random(), da: (Math.random()*0.015+0.004)*(Math.random()<0.5?1:-1) }); }
+
+/* ---------- ③ 画布 ---------- */
+const canvas = document.getElementById("stars"); const ctx = canvas.getContext("2d"); let W, H;
+function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; } addEventListener("resize", resize); resize();
+const stars = [];
+let weather = { rain: 0, aurora: 0 }, weatherTarget = { rain: 0, aurora: 0 };
+function computeWeather() {
+  const recs = viewRecords(); const now = Date.now(), cutoff = now - 7*86400000;
+  const recent = recs.filter(r => r.ts >= cutoff); const total = recent.length || 1;
+  const neg = recent.filter(r => r.mood === "negative").length;
+  const last3 = recs.filter(r => r.ts >= now - 3*86400000);
+  const prev = recs.filter(r => r.ts >= now - 7*86400000 && r.ts < now - 3*86400000);
+  const ratio = arr => arr.length ? arr.filter(r => r.mood === "negative").length / arr.length : null;
+  const last3Neg = ratio(last3), prevNeg = ratio(prev);
+  const statsRain = Math.max(0, Math.min(1, (last3Neg == null ? neg/total : last3Neg) * 1.1));
+  weatherTarget.rain = Math.max(statsRain, params.ambientRain || 0);
+  weatherTarget.aurora = (prevNeg != null && last3Neg != null) ? Math.max(0, Math.min(1, (prevNeg - last3Neg) * 1.3)) : 0;
+}
+computeWeather();
+const rainDrops = Array.from({ length: 90 }, () => ({ x: Math.random()*W, y: Math.random()*H, len: 8+Math.random()*14, sp: 4+Math.random()*5 }));
+
+/* ---------- ④ 历史星图 ---------- */
+function drawHistory() {
+  if (!CONFIG.historyVisible) return;
+  const recs = viewRecords(); if (!recs.length) return;
+  const byTheme = {}; for (const r of recs) (byTheme[r.theme] = byTheme[r.theme] || []).push(r);
+  for (const [theme, list] of Object.entries(byTheme)) {
+    if (list.length < 3) continue; list.sort((a, b) => a.ts - b.ts);
+    ctx.strokeStyle = "rgba(143,211,255,0.18)"; ctx.lineWidth = 1; ctx.setLineDash([2, 6]); ctx.beginPath();
+    list.forEach((r, i) => { const x = r.nx*W, y = r.ny*H; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]);
+    for (const r of list) { const x = r.nx*W, y = r.ny*H; ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI*2); ctx.fillStyle = "rgba(180,220,255,0.55)"; ctx.fill(); }
+    const last = list[list.length - 1]; ctx.fillStyle = "rgba(160,210,255,0.5)"; ctx.font = "11px sans-serif"; ctx.fillText(`${THEME_LABEL[theme]}·已连 ${list.length} 颗`, last.nx*W + 8, last.ny*H - 6);
+  }
+  if (params.warmGlow) { const g = ctx.createRadialGradient(W/2, H, 0, W/2, H, H*0.7); g.addColorStop(0, "rgba(255,200,140,0.05)"); g.addColorStop(1, "rgba(255,200,140,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+}
+
+/* ---------- ⑦ 主循环（含伴星/花苞春雨） ---------- */
+let bgMeteors = [], meteor = null, fireworks = [], companions = [], budRain = [];
+let bud = { growth: selfState.budGrowth || 0, glow: 0.3 };
+// 重建持久伴星（随喜悦累计，刷新仍在）
+for (let i = 0; i < (selfState.companionCount || 0); i++) companions.push({ angle: Math.random()*Math.PI*2, radius: 70+Math.random()*70, speed: 0.002+Math.random()*0.003, size: 2+Math.random()*2, phase: Math.random()*Math.PI*2 });
+function addCompanion() { if (companions.length >= 7) companions.shift(); companions.push({ angle: Math.random()*Math.PI*2, radius: 70+Math.random()*70, speed: 0.002+Math.random()*0.003, size: 2+Math.random()*2, phase: Math.random()*Math.PI*2 }); selfState.companionCount = companions.length; saveSelf(selfState); }
+function spawnBudRain() { const bx = W/2; for (let i = 0; i < 34; i++) budRain.push({ x: bx + (Math.random()-0.5)*70, y: -10 - Math.random()*40, ty: H - 64, speed: 3 + Math.random()*3 }); bud.growth = Math.min(1, bud.growth + 0.06); selfState.budGrowth = bud.growth; saveSelf(selfState); }
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  weather.rain += (weatherTarget.rain - weather.rain) * 0.02; weather.aurora += (weatherTarget.aurora - weather.aurora) * 0.02;
+  if (weather.aurora > 0.02) drawAurora(weather.aurora);
+  if (weather.rain > 0.02) drawRain(weather.rain);
+  for (const s of stars) { s.a += s.da; if (s.a > 1) { s.a = 1; s.da *= -1; } if (s.a < 0.12) { s.a = 0.12; s.da *= -1; } ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fillStyle = `rgba(255,255,255,${s.a})`; ctx.fill(); }
+  drawHistory();
+  drawCompanions();
+  drawBud();
+  if (Math.random() < 0.004 && bgMeteors.length < 2) bgMeteors.push({ x: Math.random()*W, y: Math.random()*H*0.5, vx: 2+Math.random()*2, vy: 1+Math.random(), life: 1 });
+  bgMeteors = bgMeteors.filter(m => { m.x += m.vx; m.y += m.vy; m.life -= 0.012; if (m.life <= 0 || m.x > W || m.y > H) return false; const g = ctx.createLinearGradient(m.x, m.y, m.x - m.vx*12, m.y - m.vy*12); g.addColorStop(0, `rgba(255,255,255,${m.life})`); g.addColorStop(1, "rgba(255,255,255,0)"); ctx.strokeStyle = g; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(m.x - m.vx*12, m.y - m.vy*12); ctx.stroke(); return true; });
+  if (meteor) {
+    meteor.vy *= 1.04; meteor.x += meteor.vx; meteor.y += meteor.vy; meteor.trail.push({ x: meteor.x, y: meteor.y }); if (meteor.trail.length > 26) meteor.trail.shift();
+    for (let i = 1; i < meteor.trail.length; i++) { const t = meteor.trail[i], p = meteor.trail[i-1]; const al = (i/meteor.trail.length)*0.7; ctx.strokeStyle = `rgba(${CONFIG.meteorColor},${al})`; ctx.lineWidth = (i/meteor.trail.length)*3.2; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(t.x, t.y); ctx.stroke(); }
+    ctx.beginPath(); ctx.arc(meteor.x, meteor.y, 4.5, 0, Math.PI*2); ctx.fillStyle = "rgba(230,235,245,0.95)"; ctx.shadowColor = "rgba(200,210,230,0.9)"; ctx.shadowBlur = 16; ctx.fill(); ctx.shadowBlur = 0; if (meteor.y < -60) meteor = null;
+  }
+  updateFireworks();
+  requestAnimationFrame(loop);
+}
+function drawCompanions() {
+  const cx = W/2, cy = H/2;
+  for (const c of companions) {
+    c.angle += c.speed; const x = cx + Math.cos(c.angle)*c.radius, y = cy + Math.sin(c.angle)*c.radius*0.62;
+    const pulse = 0.65 + 0.35*Math.sin(Date.now()/600 + c.phase);
+    ctx.beginPath(); ctx.arc(x, y, c.size, 0, Math.PI*2); ctx.fillStyle = `rgba(255,222,150,${0.55*pulse})`; ctx.shadowColor = "rgba(255,210,140,0.9)"; ctx.shadowBlur = 14; ctx.fill(); ctx.shadowBlur = 0;
+  }
+}
+function drawBud() {
+  const bx = W/2, by = H - 60, sc = 0.7 + bud.growth*0.9, breathe = 0.85 + 0.15*Math.sin(Date.now()/1200);
+  bud.glow += ((0.3 + bud.growth*0.6) - bud.glow) * 0.05;
+  // 花苞：中心发光球 + 几片包拢花瓣
+  ctx.save(); ctx.translate(bx, by);
+  ctx.beginPath(); ctx.arc(0, 0, 7*sc, 0, Math.PI*2); ctx.fillStyle = `rgba(255,210,170,${bud.glow})`; ctx.shadowColor = "rgba(255,190,150,0.9)"; ctx.shadowBlur = 20*bud.glow; ctx.fill(); ctx.shadowBlur = 0;
+  for (let i = 0; i < 5; i++) { const a = (i/5)*Math.PI*2 + Math.sin(Date.now()/2000)*0.1; ctx.save(); ctx.rotate(a); ctx.beginPath(); ctx.ellipse(0, -10*sc, 4*sc, 12*sc, 0, 0, Math.PI*2); ctx.fillStyle = `rgba(255,170,200,${0.35*breathe + bud.growth*0.3})`; ctx.fill(); ctx.restore(); }
+  ctx.restore();
+  // 春雨精准落向花苞
+  ctx.strokeStyle = "rgba(150,200,255,0.5)"; ctx.lineWidth = 1.2;
+  budRain = budRain.filter(d => { d.y += d.speed; ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 1, d.y + 12); ctx.stroke(); return d.y < d.ty; });
+}
+function drawRain(intensity) { const n = Math.floor(rainDrops.length * intensity); ctx.strokeStyle = "rgba(170,190,220,0.35)"; ctx.lineWidth = 1; for (let i = 0; i < n; i++) { const d = rainDrops[i]; ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 1.5, d.y + d.len); ctx.stroke(); d.y += d.sp; d.x -= 0.4; if (d.y > H) { d.y = -10; d.x = Math.random()*W; } } }
+function drawAurora(intensity) { ctx.save(); ctx.globalCompositeOperation = "lighter"; const bands = [{ y: H*0.12, col: "120,255,200", amp: 26 },{ y: H*0.18, col: "160,180,255", amp: 34 },{ y: H*0.24, col: "200,150,255", amp: 22 }]; const t = Date.now()/2600; for (const b of bands) { ctx.beginPath(); for (let x = 0; x <= W; x += 12) { const y = b.y + Math.sin(x/160 + t)*b.amp + Math.sin(x/70 - t*1.4)*8; x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } const g = ctx.createLinearGradient(0, b.y - 40, 0, b.y + 40); g.addColorStop(0, `rgba(${b.col},0)`); g.addColorStop(0.5, `rgba(${b.col},${0.12*intensity})`); g.addColorStop(1, `rgba(${b.col},0)`); ctx.strokeStyle = g; ctx.lineWidth = 50; ctx.stroke(); } ctx.restore(); }
+function launchFirework(x, y) { const palette = ["#ff6b9d","#ffd86b","#8fd3ff","#b6ff9d","#d99dff","#ff9d6b"]; const color = palette[Math.floor(Math.random()*palette.length)]; const count = 64 + Math.floor(Math.random()*32), parts = []; for (let i = 0; i < count; i++) { const ang = Math.random()*Math.PI*2, sp = 1 + Math.random()*4.2; parts.push({ x, y, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp, life: 1, decay: 0.012+Math.random()*0.01, color }); } fireworks.push({ parts }); }
+function updateFireworks() { for (const fw of fireworks) { for (const p of fw.parts) { p.x += p.vx; p.y += p.vy; p.vy += 0.03; p.vx *= 0.985; p.vy *= 0.985; p.life -= p.decay; if (p.life > 0) { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill(); } } fw.parts = fw.parts.filter(p => p.life > 0); } fireworks = fireworks.filter(fw => fw.parts.length > 0); ctx.globalAlpha = 1; }
+loop();
+function spawnMeteor(x, y) { meteor = { x, y, vx: (Math.random()-0.5)*1.2, vy: -3, trail: [] }; }
+function bloomFlower() {
+  const layer = document.getElementById("flower-layer"); const NS = "http://www.w3.org/2000/svg", size = 260; const svg = document.createElementNS(NS, "svg"); svg.setAttribute("width", size); svg.setAttribute("height", size); svg.setAttribute("viewBox", "0 0 100 100"); svg.classList.add("bloom");
+  const cx = 50, cy = 50, count = 8; for (let i = 0; i < count; i++) { const ang = (i/count)*Math.PI*2; const p = document.createElementNS(NS, "ellipse"); p.setAttribute("cx", cx + Math.cos(ang)*18); p.setAttribute("cy", cy + Math.sin(ang)*18); p.setAttribute("rx", 9); p.setAttribute("ry", 20); p.setAttribute("fill", CONFIG.bloomColor); p.setAttribute("opacity", "0.9"); p.setAttribute("transform", `rotate(${ang*180/Math.PI} ${cx} ${cy})`); p.style.transformBox = "fill-box"; p.style.transformOrigin = "center"; p.style.animation = `bloom 0.7s cubic-bezier(.2,.8,.3,1) ${i*0.05}s both`; svg.appendChild(p); }
+  const core = document.createElementNS(NS, "circle"); core.setAttribute("cx", cx); core.setAttribute("cy", cy); core.setAttribute("r", 8); core.setAttribute("fill", "#fff4c2"); core.style.animation = "bloom 0.6s ease 0.35s both"; svg.appendChild(core);
+  const defs = document.createElementNS(NS, "defs"); defs.innerHTML = `<filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`; svg.appendChild(defs); svg.setAttribute("filter", "url(#glow)"); layer.appendChild(svg);
+  setTimeout(() => { svg.classList.add("fade-out"); setTimeout(() => svg.remove(), 1200); }, 2600);
+}
+
+/* ---------- ⑧ 音效 ---------- */
+let audioCtx = null, muted = false;
+function ensureAudio() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (audioCtx && audioCtx.state === "suspended") audioCtx.resume(); }
+function beep(type) { if (muted || !audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(), now = audioCtx.currentTime; o.connect(g); g.connect(audioCtx.destination); if (type === "flower") { o.type = "sine"; o.frequency.setValueAtTime(880, now); o.frequency.exponentialRampToValueAtTime(1320, now+0.15); g.gain.setValueAtTime(0.05, now); g.gain.exponentialRampToValueAtTime(0.001, now+0.4); o.start(now); o.stop(now+0.4); } else if (type === "meteor") { o.type = "sawtooth"; o.frequency.setValueAtTime(600, now); o.frequency.exponentialRampToValueAtTime(120, now+0.5); g.gain.setValueAtTime(0.04, now); g.gain.exponentialRampToValueAtTime(0.001, now+0.5); o.start(now); o.stop(now+0.5); } else if (type === "firework") { o.type = "triangle"; o.frequency.setValueAtTime(200, now); o.frequency.exponentialRampToValueAtTime(60, now+0.25); g.gain.setValueAtTime(0.1, now); g.gain.exponentialRampToValueAtTime(0.001, now+0.32); o.start(now); o.stop(now+0.32); } else if (type === "bud") { o.type = "sine"; o.frequency.setValueAtTime(440, now); o.frequency.exponentialRampToValueAtTime(660, now+0.3); g.gain.setValueAtTime(0.04, now); g.gain.exponentialRampToValueAtTime(0.001, now+0.5); o.start(now); o.stop(now+0.5); } }
+
+/* ---------- ⑤ 情绪识别 + 细分 ---------- */
+const THEMES = { self: ["怀疑","没用","废物","自卑","不行","差劲","讨厌自己","否定","配不上","自我"], relation: ["朋友","家人","父母","恋爱","孤独","被忽视","吵架","分手","背叛","疏远"], work: ["工作","加班","考试","学习","压力","老板","同事","失业","任务","deadline"], health: ["生病","失眠","身体","健康","头疼","疲惫","累垮","熬夜"] };
+function classifyTheme(text) { for (const [theme, words] of Object.entries(THEMES)) if (words.some(w => text.includes(w))) return theme; return "other"; }
+const THEME_LABEL = { self: "自我", relation: "关系", work: "事业", health: "身心", other: "日常" };
+const CELEBRATE = ["生日","毕业","结婚","脱单","升职","加薪","上岸","中奖","达标","达成","胜利","赢了","好消息","喜讯","终于","牵手","求婚","录取","转正"];
+const ANGER = ["吐槽","骂","气死","愤怒","怒","烦死了","烂","恶心","滚","草","去死","操","可恶","讨厌","烦人","气炸"];
+const LEXICON = { negative: ["烦恼","烦","难过","伤心","心碎","焦虑","压力","累","疲惫","痛苦","失望","绝望","委屈","崩溃","郁闷","孤独","孤单","害怕","恐惧","愤怒","生气","讨厌","厌恶","emo","哭","想哭","失落","压抑","不安","担忧","烦躁","糟糕","烦人","miserable"], positive: ["开心","高兴","快乐","幸福","兴奋","激动","爱","喜欢","感恩","感谢","满足","温暖","美好","棒","厉害","笑","微笑","惊喜","期待","愉悦","舒服","治愈","幸运","甜","爱了"] };
+function detectMoodLocal(text) { if (!text.trim()) return "empty"; let neg = 0, pos = 0; for (const w of LEXICON.negative) if (text.includes(w)) neg++; for (const w of LEXICON.positive) if (text.includes(w)) pos++; if (neg && pos) return neg >= pos ? "negative" : "positive"; if (neg) return "negative"; if (pos) return "positive"; return "neutral"; }
+function llmEndpoint() {
+  if (CONFIG.llmBaseUrl) return CONFIG.llmBaseUrl.replace(/\/$/, "") + "/chat/completions";
+  if (CONFIG.llmProvider === "openai") return "https://api.openai.com/v1/chat/completions";
+  if (CONFIG.llmProvider === "kimi") return "https://api.moonshot.cn/v1/chat/completions";
+  if (CONFIG.llmProvider === "deepseek") return "https://api.deepseek.com/v1/chat/completions";
+  return "https://api.openai.com/v1/chat/completions";
+}
+function llmModelName() {
+  if (CONFIG.llmModel) return CONFIG.llmModel;
+  return ({ openai: "gpt-4o-mini", kimi: "moonshot-v1-8k", deepseek: "deepseek-chat" })[CONFIG.llmProvider] || "gpt-4o-mini";
+}
+async function callLLM(messages) {
+  const res = await fetch(llmEndpoint(), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${CONFIG.apiKey}` }, body: JSON.stringify({ model: llmModelName(), messages, temperature: 0.85 }) });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const d = await res.json();
+  return d.choices?.[0]?.message?.content || "";
+}
+async function detectMoodLLM(text) {
+  try { const ans = (await callLLM([{ role: "user", content: `判断下面这句话的情绪，只回复 negative / positive / neutral 其中一个词，不要解释。句子：${text}` }])).toLowerCase(); return ans.includes("neg") ? "negative" : ans.includes("pos") ? "positive" : "neutral"; } catch (e) { return detectMoodLocal(text); }
+}
+async function detectMood(text) { return CONFIG.useLLM && CONFIG.apiKey ? await detectMoodLLM(text) : detectMoodLocal(text); }
+function subMood(text, mood) {
+  if (mood === "positive") return CELEBRATE.some(w => text.includes(w)) ? "celebrate" : "joy";
+  if (mood === "negative") return ANGER.some(w => text.includes(w)) ? "anger" : "anxiety";
+  return "neutral";
+}
+
+/* ---------- ⑨ 治愈内容推送（本地库 + 可接 LLM 真实生成） ---------- */
+const CONTENT = {
+  anger: ["行，这破事配得上你一句脏话，骂完咱翻篇。","它要是个人，已经被你骂进小黑屋了——解气了吗？","建议把今天的不爽折成纸飞机，发射，biu——","你的怒气值已到账，系统温馨提示：不值得为它续费。","深呼吸。这口气吐出去，就归宇宙管了。"],
+  anxiety: ["达尔文当年论文被拒了，现在谁还记得那个审稿人。","宇宙 138 亿岁，这件小事在它的时间轴里连 0.1 秒都不到。","历史上无数人搞砸过同样的事，后来都忙着活下去了——你也是。","把'万一'换成'就算'：就算搞砸了，天也不会塌。","你现在踩的这块地，是无数人担心过却都站住的。"],
+  joy: ["于是那只迷路的小狐狸，把星星当路灯，一路走回了家。","你的灵感是一颗种子，今天冒了芽，明天自己找光。","想象你是一朵云，刚飘过山顶，接下来要去看海。","把这个好点子写下来，它会替你记得今天有多亮。","风把你的笑吹远了，但宇宙替你收好了。"],
+  celebrate: ["这一刻值得被记进你的星座里，闪闪的那种。","恭喜你，宇宙刚刚为你鼓了一次掌。","你抵达的地方，曾经只是你不敢想的坐标。","让烟花替你说：我做到了。","这一页翻过去，下一页会更亮。"],
+  neutral: ["写下来本身就很好，不必急着命名它。","情绪没有 KPI，你只需在此刻待一会儿。","空白也是一种天气，允许它停一会儿。"]
+};
+// 自我怀疑主题专属鼓励（本地库）
+const SELF_PEER = ["你不是不行，你只是正在长出新的力气。","怀疑自己的时候，记得你也曾挺过很多次。","你值得被自己温柔对待，哪怕今天没做成什么。","自我怀疑不是弱点，是你在认真活着，也是你还会变好的证据。"];
+// 各情绪下交给大模型的「人设 / 风格」
+const CONTENT_SYS = {
+  anger: "你是用户的'顶级嘴替'，用冷幽默或谐音梗替用户刻薄地吐槽眼前破事，一两句，爽朗不矫情。",
+  anxiety: "你是用户的'平行时空'朋友，讲一个舒缓的、历史上名人或普通人同样搞砸/倒霉的真实小事，让用户松一口气。",
+  joy: "你是用户的'脑洞搭子'，根据用户的灵感或喜悦，即兴续写一个奇妙微童话的开头。",
+  celebrate: "你是用户的啦啦队，用一句灿烂真诚的话替用户庆祝这一刻。",
+  neutral: "你是温柔的陪伴者，用一句话回应，不评判。",
+  self: "你是用户曾经写给自己的鼓励者，用一句温暖有力的话提醒 TA：这种情绪 TA 早就经历并跨越过。"
+};
+const pick = a => a[Math.floor(Math.random() * a.length)];
+async function showContent(sub, text, theme) {
+  const el = document.getElementById("content");
+  let base = pick(CONTENT[sub] || CONTENT.neutral);
+  if (theme === "self" && (sub === "anxiety" || sub === "anger")) base += " " + pick(SELF_PEER);
+  el.textContent = base; el.classList.add("show");
+  if (CONFIG.useLLM && CONFIG.apiKey && text) {
+    try {
+      const sys = CONTENT_SYS[sub] || CONTENT_SYS.neutral;
+      let user = `用户刚写下：「${text}」\n请用一句中文回应（不超过70字），风格：${CONTENT_SYS[sub] || "温柔真诚"}。`;
+      if (theme === "self") user += "\n另外这是一次'自我怀疑'，请再补一句写给 TA 的、提醒 TA 曾跨越过类似时刻的鼓励（与前一句空一行）。";
+      const out = (await callLLM([{ role: "system", content: sys }, { role: "user", content: user }])).trim();
+      if (out) el.textContent = out;
+    } catch (e) { /* 保留本地文案 */ }
+  }
+}
+function hideContent() { const el = document.getElementById("content"); el.classList.remove("show"); }
+
+/* ---------- ⑥ 交互 ---------- */
+const input = document.getElementById("emotion"), hint = document.getElementById("hint"), greeting = document.getElementById("greeting"), breath = document.getElementById("breath"), voiceBtn = document.getElementById("voice"), fwBtn = document.getElementById("firework-btn");
+const defaultHint = "按 Enter 释放它 · 按住 🎙 说出口 · 点 🎆 放烟花";
+function timeGreeting() { const h = new Date().getHours(); if (h < 5) return "夜深了，今天辛苦了，有什么想放下的？"; if (h < 10) return "新的一天，昨晚睡得好吗？"; if (h < 16) return "此刻，你心里装着什么？"; if (h < 21) return "天色渐暗，今天还顺利吗？"; return "该休息了，让情绪透透气吧。"; }
+greeting.textContent = timeGreeting(); setInterval(() => { greeting.style.opacity = 0; setTimeout(() => { greeting.textContent = timeGreeting(); greeting.style.opacity = 1; }, 1000); }, 60000);
+breath.addEventListener("click", () => input.focus());
+const FEEDBACK = {
+  anger: ["你的火，化作春雨落进那朵花苞里。", "雨替你浇灭了它，花苞亮了一下。"],
+  anxiety: ["一颗流星带走了你的烦恼。", "它正加速飞离，去往没有重量的地方。", "你说出口的，就已经轻了一半。"],
+  joy: ["一颗伴星亮起，从此绕着你的宇宙。", "喜悦化作永恒的光，悬在你身旁。"],
+  celebrate: ["烟花为你升起——这一刻，值得庆祝。", "恭喜你走到了这里，看，满天烟火。", "宇宙也为你放了一朵花火。"],
+  neutral: ["我听见了。再具体一点，好吗？", "情绪没有对错，写下来也行。", "说出那个词——烦恼，或开心。"],
+  empty: ["空白也是一种情绪。", "想好了再按 Enter 也没关系。"],
+  friendView: ["这是朋友的星球，你可在「我的宇宙」记录。", "你在旁观她的天气，轻一点。", "切换回我的宇宙，写下你的此刻。"]
+};
+function manualFirework() { ensureAudio(); launchFirework(W*(0.25+Math.random()*0.5), H*(0.18+Math.random()*0.22)); beep("firework"); setTimeout(() => launchFirework(W*(0.2+Math.random()*0.6), H*(0.15+Math.random()*0.2)), 350); }
+fwBtn.addEventListener("click", manualFirework);
+
+async function submit(text) {
+  ensureAudio(); text = (text || "").trim();
+  if (!text) { hint.textContent = pick(FEEDBACK.empty); return; }
+  if (["放烟花","烟花","🎆","firework"].some(k => text.includes(k))) { manualFirework(); hint.textContent = "烟花已升起 ✨"; setTimeout(() => hint.textContent = defaultHint, 3200); input.value = ""; return; }
+  if (currentView !== "self") { hint.textContent = pick(FEEDBACK.friendView); setTimeout(() => hint.textContent = defaultHint, 3500); input.value = ""; return; }
+  hint.style.opacity = "0.4";
+  const mood = await detectMood(text); const sub = subMood(text, mood); const theme = classifyTheme(text);
+  if (mood !== "empty") { selfState.records.push({ id: Date.now()+"-"+Math.random(), text, mood, theme, nx: Math.random(), ny: Math.random()*0.9+0.05, ts: Date.now() }); saveSelf(selfState); computeWeather(); }
+  if (sub === "anger") { spawnBudRain(); beep("bud"); hint.textContent = pick(FEEDBACK.anger); }
+  else if (sub === "anxiety") { const r = input.getBoundingClientRect(); spawnMeteor(r.left + r.width/2, r.top); beep("meteor"); hint.textContent = pick(FEEDBACK.anxiety); }
+  else if (sub === "joy") { addCompanion(); bloomFlower(); beep("flower"); hint.textContent = pick(FEEDBACK.joy); }
+  else if (sub === "celebrate") { manualFirework(); hint.textContent = pick(FEEDBACK.celebrate); }
+  else if (sub === "neutral") { hint.textContent = pick(FEEDBACK.neutral); }
+  else { hint.textContent = pick(FEEDBACK.empty); }
+  showContent(sub, text, theme);
+  input.value = ""; hint.style.opacity = "1"; setTimeout(() => { hint.textContent = defaultHint; }, 4200); setTimeout(hideContent, 9000);
+}
+input.addEventListener("keydown", e => { if (e.key === "Enter") submit(input.value); });
+
+/* 语音 */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition; let recognizer = null, listening = false;
+if (SR) { recognizer = new SR(); recognizer.lang = "zh-CN"; recognizer.interimResults = false; recognizer.onresult = e => submit(e.results[0][0].transcript); recognizer.onerror = stopVoice; recognizer.onend = stopVoice; }
+else { voiceBtn.classList.add("disabled"); voiceBtn.title = "当前浏览器不支持语音（用 Chrome/Edge 或打字）"; }
+function startVoice() { if (!recognizer || listening) return; try { recognizer.start(); listening = true; voiceBtn.classList.add("listening"); hint.textContent = "我在听…说完松手"; } catch (e) {} }
+function stopVoice() { listening = false; voiceBtn.classList.remove("listening"); if (recognizer) { try { recognizer.stop(); } catch (e) {} } }
+voiceBtn.addEventListener("mousedown", startVoice); voiceBtn.addEventListener("touchstart", e => { e.preventDefault(); startVoice(); }, { passive: false });
+["mouseup", "mouseleave", "touchend"].forEach(ev => voiceBtn.addEventListener(ev, stopVoice));
+
+/* ---------- ⑩ 分享 / 导入 / 切换 ---------- */
+function encodeShare(obj) { return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); }
+function decodeShare(str) { return JSON.parse(decodeURIComponent(escape(atob(str)))); }
+function shareLink() { return location.origin + location.pathname + "#share=" + encodeShare({ name: "朋友", setting: selfState.setting, records: selfState.records }); }
+document.getElementById("share-me").onclick = async () => { const link = shareLink(); try { await navigator.clipboard.writeText(link); hint.textContent = "分享链接已复制，发给朋友吧 🔗"; } catch (e) { prompt("复制这条链接发给朋友：", link); } setTimeout(() => hint.textContent = defaultHint, 3500); };
+document.getElementById("import-me").onclick = () => document.getElementById("import-area").classList.toggle("hidden");
+document.getElementById("do-import").onclick = () => { const raw = document.getElementById("importer").value.trim(); const m = raw.match(/share=([^&\s]+)/); const code = m ? m[1] : raw; try { const data = decodeShare(code); const name = (prompt("给这颗星球起个名字：", data.name || "朋友") || "朋友").slice(0, 12); const id = "f_" + Date.now(); friends = friends.filter(f => f.name !== name); friends.push({ id, name, setting: data.setting || null, records: data.records || [] }); saveFriends(friends); currentView = id; refreshView(); openPlanetPanel(); hint.textContent = `已住进「${name}的星球」🌌`; setTimeout(() => hint.textContent = defaultHint, 3500); } catch (e) { alert("分享码无法识别，请确认复制完整。"); } };
+document.getElementById("redefine").onclick = () => { document.getElementById("planet-panel").classList.add("hidden"); openOnboarding(); };
+function openPlanetPanel() {
+  const list = document.getElementById("planet-list"); list.innerHTML = "";
+  const rows = [{ id: "self", name: "我的宇宙", recs: selfState.records }]; friends.forEach(f => rows.push({ id: f.id, name: f.name + "的星球", recs: f.records }));
+  rows.forEach(r => { const div = document.createElement("div"); div.className = "planet-row" + (currentView === r.id ? " active" : ""); const last = r.recs[r.recs.length - 1]; const moodTxt = last ? (last.mood === "negative" ? "她的夜空正下着雨" : (last.mood === "positive" ? (CELEBRATE.some(w => last.text.includes(w)) ? "她刚升起烟花" : "她的花园正开花") : "她的夜空很宁静")) : "还没有记录"; div.innerHTML = `<div><div class="pn">${r.name}</div><div class="pm">${r.recs.length} 条记录 · ${moodTxt}</div></div>`; const acts = document.createElement("div"); acts.className = "acts"; const sw = document.createElement("button"); sw.textContent = currentView === r.id ? "查看中" : "查看"; sw.onclick = () => { currentView = r.id; refreshView(); openPlanetPanel(); }; acts.appendChild(sw); if (r.id !== "self") { const del = document.createElement("button"); del.textContent = "移除"; del.onclick = () => { friends = friends.filter(f => f.id !== r.id); saveFriends(friends); if (currentView === r.id) { currentView = "self"; refreshView(); } openPlanetPanel(); }; acts.appendChild(del); } div.appendChild(acts); list.appendChild(div); });
+  document.getElementById("planet-panel").classList.remove("hidden");
+}
+function refreshView() { applySetting(); computeWeather(); const hud = document.getElementById("hud"); hud.innerHTML = `<span id="hud-name">🌌 ${viewName()}</span>`; document.getElementById("hud-name").onclick = openPlanetPanel; input.placeholder = currentView === "self" ? "此刻，你心里装着什么？" : "（这是朋友的星球，回到「我的宇宙」记录）"; }
+document.getElementById("planets").onclick = openPlanetPanel;
+(function autoImportFromHash() { const m = location.hash.match(/share=([^&]+)/); if (m) { try { const data = decodeShare(m[1]); const name = (data.name && data.name !== "朋友" ? data.name : "朋友") + "的星球"; const id = "f_" + Date.now(); friends.push({ id, name, setting: data.setting || null, records: data.records || [] }); saveFriends(friends); currentView = id; } catch (e) {} } })();
+
+/* ---------- ⑪ 导出 / 重置 / 静音 ---------- */
+document.getElementById("export").onclick = () => { const recs = viewRecords(); const blob = new Blob([JSON.stringify(recs, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = viewName() + "-" + Date.now() + ".json"; a.click(); URL.revokeObjectURL(url); hint.textContent = "已导出「" + viewName() + "」的记录 📤"; setTimeout(() => hint.textContent = defaultHint, 3000); };
+document.getElementById("reset").onclick = () => { if (confirm("清空「" + viewName() + "」的所有记录？此操作不可恢复。")) { if (currentView === "self") { selfState.records = []; selfState.companionCount = 0; selfState.budGrowth = 0; companions.length = 0; bud.growth = 0; saveSelf(selfState); } else { friends = friends.filter(f => f.id !== currentView); saveFriends(friends); currentView = "self"; } computeWeather(); hint.textContent = "已清空，开始新的旅程"; setTimeout(() => hint.textContent = defaultHint, 3000); } };
+const muteBtn = document.getElementById("mute"); muteBtn.onclick = () => { muted = !muted; muteBtn.textContent = muted ? "🔇" : "🔊"; };
+
+/* ---------- ⑫ 本周小结 / 星座时间线 / 设置面板 ---------- */
+document.querySelectorAll(".close-x").forEach(x => x.onclick = () => document.getElementById(x.dataset.close).classList.add("hidden"));
+document.querySelectorAll(".overlay").forEach(ov => ov.addEventListener("click", e => { if (ov.id !== "onboarding" && e.target === ov) ov.classList.add("hidden"); }));
+
+function weeklySummary() {
+  const recs = viewRecords(); const now = Date.now(); const cutoff = now - 7*86400000;
+  const recent = recs.filter(r => r.ts >= cutoff);
+  const n = recent.length;
+  const pos = recent.filter(r => r.mood === "positive").length;
+  const neg = recent.filter(r => r.mood === "negative").length;
+  const themes = {}; recent.forEach(r => themes[r.theme] = (themes[r.theme] || 0) + 1);
+  const topTheme = Object.entries(themes).sort((a, b) => b[1] - a[1])[0];
+  let line;
+  if (n === 0) line = "这一周还很安静，留白也是你的天气。";
+  else if (neg > pos) line = `这七天落了 ${neg} 场雨，但你每一次都让它们落下了。`;
+  else if (pos > neg) line = `这七天你开了 ${pos} 朵花，宇宙替你记着这些光。`;
+  else line = `这七天你书写了 ${n} 次，平静里有自己的节奏。`;
+  return { n, pos, neg, topTheme, line };
+}
+async function openSummary() {
+  const s = weeklySummary();
+  document.getElementById("summary-stats").innerHTML = `<div class="stat"><div class="num">${s.n}</div><div class="lab">本周记录</div></div><div class="stat"><div class="num">${s.pos}</div><div class="lab">暖光时刻</div></div><div class="stat"><div class="num">${s.neg}</div><div class="lab">雨天时刻</div></div>`;
+  const poemEl = document.getElementById("summary-poem"), noteEl = document.getElementById("summary-note");
+  let line = s.line; if (s.topTheme) line += ` 最常浮现的，是「${THEME_LABEL[s.topTheme[0]]}」。`;
+  poemEl.textContent = line; noteEl.textContent = "（本地统计；开启大模型后，可让 AI 把你的数据凝成一句诗。）";
+  if (CONFIG.useLLM && CONFIG.apiKey && s.n > 0) {
+    try {
+      const out = (await callLLM([{ role: "system", content: "你是诗人，根据用户过去七天的情绪记录，写一句中文短诗（不超过40字），温柔克制，不要标点堆砌。" }, { role: "user", content: `本周记录 ${s.n} 条，暖光 ${s.pos} 次，雨天 ${s.neg} 次，高频主题「${s.topTheme ? THEME_LABEL[s.topTheme[0]] : "日常"}」。` }])).trim();
+      if (out) { poemEl.textContent = out; noteEl.textContent = "✨ 这句由大模型为你写成。"; }
+    } catch (e) {}
+  }
+  document.getElementById("summary-panel").classList.remove("hidden");
+}
+function fmtDate(ts) { const d = new Date(ts), p = n => (n < 10 ? "0" : "") + n; return `${p(d.getMonth() + 1)}/${p(d.getDate())}`; }
+function moodColor(m) { return m === "positive" ? "rgba(255,210,140,0.9)" : m === "negative" ? "rgba(150,190,255,0.9)" : "rgba(200,200,210,0.7)"; }
+function openConstellation() {
+  const recs = viewRecords(); const byTheme = {};
+  for (const r of recs) (byTheme[r.theme] = byTheme[r.theme] || []).push(r);
+  const list = document.getElementById("constellation-list"); list.innerHTML = "";
+  const entries = Object.entries(byTheme).sort((a, b) => b[1].length - a[1].length);
+  if (!entries.length) { list.innerHTML = `<div class="empty-tip">还没有星星。先在输入框写下点什么，它们会慢慢连成你的星座。</div>`; }
+  for (const [theme, arr] of entries) {
+    arr.sort((a, b) => a.ts - b.ts);
+    const block = document.createElement("div"); block.className = "theme-block";
+    block.innerHTML = `<h3>${THEME_LABEL[theme]} · ${arr.length} 颗${arr.length >= 3 ? " · 已连成星座" : ""}</h3>`;
+    arr.forEach(r => {
+      const it = document.createElement("div"); it.className = "tl-item";
+      const safe = r.text.replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+      it.innerHTML = `<span class="dot" style="background:${moodColor(r.mood)}"></span><span class="meta">${fmtDate(r.ts)}</span><span class="txt">${safe}</span>`;
+      block.appendChild(it);
+    });
+    list.appendChild(block);
+  }
+  document.getElementById("constellation-panel").classList.remove("hidden");
+}
+function openSettings() {
+  document.getElementById("cfg-provider").value = CONFIG.llmProvider;
+  document.getElementById("cfg-key").value = CONFIG.apiKey;
+  document.getElementById("cfg-model").value = CONFIG.llmModel;
+  document.getElementById("cfg-base").value = CONFIG.llmBaseUrl;
+  document.getElementById("cfg-use").checked = CONFIG.useLLM;
+  document.getElementById("settings-panel").classList.remove("hidden");
+}
+document.getElementById("cfg-save").onclick = () => {
+  CONFIG.llmProvider = document.getElementById("cfg-provider").value;
+  CONFIG.apiKey = document.getElementById("cfg-key").value.trim();
+  CONFIG.llmModel = document.getElementById("cfg-model").value.trim();
+  CONFIG.llmBaseUrl = document.getElementById("cfg-base").value.trim();
+  CONFIG.useLLM = document.getElementById("cfg-use").checked;
+  saveCfg();
+  document.getElementById("settings-panel").classList.add("hidden");
+  hint.textContent = CONFIG.useLLM && CONFIG.apiKey ? "大模型已启用 · 治愈文案将由 AI 生成 ✨" : "设置已保存（未启用大模型，使用本地文案）";
+  setTimeout(() => hint.textContent = defaultHint, 3500);
+};
+document.getElementById("summary").onclick = openSummary;
+document.getElementById("constellation").onclick = openConstellation;
+document.getElementById("settings").onclick = openSettings;
+
+/* 启动 */
+loadCfg();
+if (!selfState.setting) { openOnboarding(); }
+else { refreshView(); if (!localStorage.getItem(KEY_SEEN) && !selfState.records.length) { hint.textContent = "提示：双击页面底部小字可填充 7 天示例；点 👥 可分享宇宙给朋友 ✨"; localStorage.setItem(KEY_SEEN, "1"); setTimeout(() => { if (input.value === "") hint.textContent = defaultHint; }, 9000); } }
+
+document.querySelector(".footer-note").addEventListener("dblclick", () => {
+  const samples = [{ d: 6, m: "negative", t: "又失眠了，压力好大，怀疑自己不行" },{ d: 5, m: "negative", t: "工作加班到崩溃，觉得自己没用" },{ d: 4, m: "negative", t: "被忽视了，孤独，讨厌自己" },{ d: 3, m: "neutral", t: "今天还算平常" },{ d: 2, m: "positive", t: "朋友来找我，有点开心温暖" },{ d: 1, m: "positive", t: "终于放松了，感恩今天" },{ d: 0, m: "positive", t: "睡得不错，心情好多了，爱了" }];
+  if (currentView !== "self") { hint.textContent = "请先切回「我的宇宙」再填充示例"; setTimeout(() => hint.textContent = defaultHint, 3000); return; }
+  for (const s of samples) { const ts = Date.now() - s.d * 86400000; selfState.records.push({ id: ts + "-" + Math.random(), text: s.t, mood: s.m, theme: classifyTheme(s.t), nx: Math.random(), ny: Math.random()*0.9+0.05, ts }); }
+  saveSelf(selfState); computeWeather(); hint.textContent = "已填充 7 天示例 · 观察天气与星座"; setTimeout(() => hint.textContent = defaultHint, 4200);
+});
+input.focus();
+
+/* ---------- PWA：注册 Service Worker（可添加到主屏 / 离线打开） ---------- */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
+</script>
+</body>
+</html>

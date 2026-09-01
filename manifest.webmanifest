@@ -1,0 +1,15 @@
+{
+  "name": "情绪宇宙 · Emotion Universe",
+  "short_name": "情绪宇宙",
+  "description": "一个会呼吸、生长的动态情绪庇护所。写下念头，AI 把它炼成流星、烟花、花朵与星辰。",
+  "lang": "zh-CN",
+  "start_url": "index.html",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050510",
+  "theme_color": "#050510",
+  "icons": [
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
