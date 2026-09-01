@@ -48,12 +48,36 @@
 ## 启用 AI 治愈文案（让"嘴替"真的会吐槽）
 
 默认使用本地文案库，无需联网即可用。想要大模型生成：
-1. 打开后点右上角 **⚙️**；
-2. 选平台（DeepSeek / OpenAI / Kimi），粘贴你的 **API Key**，可留空模型名用默认；
-3. 勾选「启用大模型」→ 保存。
 
-之后每次提交情绪，下方文案就是 AI 实时写的；任何失败都会**自动回退本地文案**，不会白屏。
-（注：浏览器直连大模型可能受跨域限制；若启用后仍无变化，多半是该平台不允许浏览器直接调用，可在「自定义地址」填一个支持 CORS 的中转，或由后端代理。）
+1. 打开后点右上角 **⚙️**；
+2. **推荐选 `OpenRouter`**（[openrouter.ai](https://openrouter.ai) 免费注册，拿到 Key 即填）或 `SiliconFlow`（硅基流动，国内直连）—— 这两个平台**允许网页在浏览器里直接调用**，粘贴 Key、勾「启用大模型」、保存，文案立刻变成 AI 实时写的；
+3. 若你坚持用 DeepSeek / OpenAI / Kimi：它们的接口**默认禁止浏览器直连（CORS 拦截）**，纯前端页面直接填会失败并回退本地文案。要么改用上面的 OpenRouter，要么按下方「自建中转代理」部署一个 Cloudflare Worker 把地址填进「自定义地址」。
+
+任何失败都会**自动回退本地文案**，不会白屏。
+
+### 自建中转代理（保留 DeepSeek，且能绕过跨域）
+
+本包是纯静态站点，无法自己跑后端。但你可以 1 分钟白嫖一个 Cloudflare Worker 做中转：
+
+1. 打开 [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages → Create Worker**，名称随意；
+2. 把默认代码整段替换为下面这段（它只做「转发 + 补 CORS 头」，不存任何密钥）：
+```js
+export default {
+  async fetch(req) {
+    const url = new URL(req.url);
+    const target = "https://api.deepseek.com" + (url.pathname || "/v1/chat/completions");
+    const r = await fetch(target, { method: req.method, headers: req.headers, body: req.body });
+    const h = new Headers(r.headers);
+    h.set("Access-Control-Allow-Origin", "*");
+    h.set("Access-Control-Allow-Headers", "*");
+    return new Response(r.body, { status: r.status, headers: h });
+  }
+}
+```
+3. **Deploy** 后复制给你的 `https://xxx.workers.dev` 地址；
+4. 回到 App 的 ⚙️ → 「自定义地址」填 `https://xxx.workers.dev/v1`，平台仍选 `DeepSeek`，保存即可。
+
+> 该 Worker 只转发请求，密钥仍在你浏览器本地、不离开你设备；它返回 `Access-Control-Allow-Origin: *`，所以浏览器就不再拦截。
 
 ---
 

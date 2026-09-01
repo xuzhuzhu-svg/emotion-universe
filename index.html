@@ -5,13 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>情绪宇宙 · Emotion Universe</title>
 <link rel="manifest" href="manifest.webmanifest" />
-<meta name="theme-color" content="#050510" />
+<meta name="theme-color" content="#0e0a07" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="apple-touch-icon" href="icon-512.png" />
 <style>
-  :root { --bg-top: #050510; --bg-bottom: #0a0a24; --ink: rgba(255,255,255,0.92); --ink-soft: rgba(255,255,255,0.5); --glow: #8fd3ff; }
+  :root {
+    --bg-top: #0e0a07;        /* 深暖炭黑（复古） */
+    --bg-bottom: #1c140d;     /* 暖棕黑 */
+    --ink: rgba(240,231,216,0.92);    /* 暖白（胶片感） */
+    --ink-soft: rgba(228,216,198,0.46);
+    --glow: #e8c07a;          /* 暖金（主点缀） */
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
   body { font-family: "PingFang SC","Microsoft YaHei","Helvetica Neue",system-ui,sans-serif; background: radial-gradient(ellipse at 50% 18%, var(--bg-bottom), var(--bg-top) 72%); color: var(--ink); -webkit-font-smoothing: antialiased; transition: background 1.2s ease; }
@@ -25,12 +31,12 @@
   .garden { position: fixed; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; pointer-events: none; }
   .garden > * { pointer-events: auto; }
   .greeting { font-size: clamp(15px,2.4vw,19px); font-weight: 300; color: var(--ink-soft); letter-spacing: 0.12em; margin-bottom: 26px; min-height: 24px; transition: opacity 1s; }
-  .breath { width: 14px; height: 14px; border-radius: 50%; background: rgba(143,211,255,0.85); box-shadow: 0 0 22px rgba(143,211,255,0.7); animation: breath 3.4s ease-in-out infinite; cursor: pointer; margin-bottom: 28px; }
+  .breath { width: 14px; height: 14px; border-radius: 50%; background: rgba(232,192,122,0.85); box-shadow: 0 0 22px rgba(232,192,122,0.7); animation: breath 3.4s ease-in-out infinite; cursor: pointer; margin-bottom: 28px; }
   @keyframes breath { 0%,100% { transform: scale(0.7); opacity: 0.35; } 50% { transform: scale(1.15); opacity: 0.95; } }
   .input-row { position: relative; width: min(560px, 90vw); display: flex; gap: 8px; }
   #emotion { flex: 1; padding: 15px 22px; font-size: 16px; color: var(--ink); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; outline: none; backdrop-filter: blur(8px); text-align: center; letter-spacing: 0.04em; opacity: 0.55; transition: all 0.35s; }
   #emotion::placeholder { color: rgba(255,255,255,0.3); }
-  #emotion:focus { opacity: 1; border-color: rgba(143,211,255,0.6); box-shadow: 0 0 0 4px rgba(143,211,255,0.12), 0 0 40px rgba(143,211,255,0.18); background: rgba(255,255,255,0.08); }
+  #emotion:focus { opacity: 1; border-color: rgba(232,192,122,0.6); box-shadow: 0 0 0 4px rgba(232,192,122,0.12), 0 0 40px rgba(232,192,122,0.18); background: rgba(255,255,255,0.08); }
   .icon-btn { flex: 0 0 auto; width: 50px; height: 50px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.05); color: var(--ink); font-size: 20px; cursor: pointer; backdrop-filter: blur(8px); transition: all 0.2s; user-select: none; -webkit-user-select: none; display: flex; align-items: center; justify-content: center; }
   #voice:active, #voice.listening { background: rgba(255,90,120,0.22); border-color: rgba(255,120,140,0.7); box-shadow: 0 0 24px rgba(255,90,120,0.4); transform: scale(0.94); }
   #voice.disabled { opacity: 0.35; cursor: not-allowed; }
@@ -53,16 +59,16 @@
   .quiz-q .qt { font-size: 15px; margin-bottom: 12px; letter-spacing: 0.04em; }
   .opts { display: flex; flex-wrap: wrap; gap: 10px; }
   .opt { padding: 10px 18px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.04); cursor: pointer; font-size: 14px; transition: all 0.2s; letter-spacing: 0.04em; }
-  .opt:hover { border-color: rgba(143,211,255,0.5); }
-  .opt.sel { background: rgba(143,211,255,0.18); border-color: rgba(143,211,255,0.7); color: #fff; }
-  .primary { margin-top: 8px; width: 100%; padding: 14px; border-radius: 999px; border: none; cursor: pointer; background: linear-gradient(120deg, rgba(143,211,255,0.9), rgba(180,150,255,0.9)); color: #04101e; font-size: 15px; letter-spacing: 0.1em; font-weight: 500; }
+  .opt:hover { border-color: rgba(232,192,122,0.5); }
+  .opt.sel { background: rgba(232,192,122,0.18); border-color: rgba(232,192,122,0.7); color: #fff; }
+  .primary { margin-top: 8px; width: 100%; padding: 14px; border-radius: 999px; border: none; cursor: pointer; background: linear-gradient(120deg, rgba(232,192,122,0.92), rgba(206,128,108,0.92)); color: #2a1a10; font-size: 15px; letter-spacing: 0.1em; font-weight: 500; }
   .primary:disabled { opacity: 0.4; cursor: not-allowed; }
   .planet-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; background: rgba(255,255,255,0.03); }
   .planet-row .pn { font-size: 15px; }
   .planet-row .pm { font-size: 11px; color: var(--ink-soft); margin-top: 3px; }
   .planet-row .acts { display: flex; gap: 8px; }
   .planet-row .acts button { padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.05); color: var(--ink); cursor: pointer; font-size: 12px; }
-  .planet-row.active { border-color: rgba(143,211,255,0.6); background: rgba(143,211,255,0.08); }
+  .planet-row.active { border-color: rgba(232,192,122,0.6); background: rgba(232,192,122,0.08); }
   .panel-actions { display: flex; gap: 10px; margin-top: 18px; }
   .panel-actions button { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.05); color: var(--ink); cursor: pointer; font-size: 13px; }
   .hint-box { font-size: 12px; color: var(--ink-soft); margin-top: 14px; line-height: 1.7; letter-spacing: 0.03em; }
@@ -70,12 +76,12 @@
   .row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
   .row label { font-size: 13px; width: 92px; color: var(--ink-soft); letter-spacing: 0.04em; flex: 0 0 auto; }
   .row input, .row select { flex: 1; padding: 10px 12px; background: rgba(0,0,0,0.3); color: var(--ink); border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; font-size: 13px; min-width: 0; }
-  .row input:focus, .row select:focus { outline: none; border-color: rgba(143,211,255,0.6); }
+  .row input:focus, .row select:focus { outline: none; border-color: rgba(232,192,122,0.6); }
   .switch { position: relative; width: 46px; height: 26px; flex: 0 0 auto; }
   .switch input { opacity: 0; width: 0; height: 0; }
   .slider { position: absolute; inset: 0; background: rgba(255,255,255,0.12); border-radius: 999px; cursor: pointer; transition: .25s; }
   .slider:before { content: ""; position: absolute; height: 20px; width: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .25s; }
-  .switch input:checked + .slider { background: rgba(143,211,255,0.7); }
+  .switch input:checked + .slider { background: rgba(232,192,122,0.7); }
   .switch input:checked + .slider:before { transform: translateX(20px); }
   .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0; }
   .stat { text-align: center; padding: 16px 8px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); }
@@ -94,12 +100,22 @@
   .panel-note { font-size: 11.5px; color: var(--ink-soft); line-height: 1.7; margin-top: 6px; }
   .play-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
   .play-grid button { padding: 13px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.05); color: var(--ink); cursor: pointer; font-size: 14px; transition: all .2s; }
-  .play-grid button:hover { border-color: rgba(143,211,255,0.5); }
+  .play-grid button:hover { border-color: rgba(232,192,122,0.5); }
   #play-result { margin-top: 14px; font-size: 13.5px; line-height: 1.85; color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; min-height: 42px; }
+  /* —— 电影感视觉：胶片颗粒 + 暗角 + 信箱黑边 —— */
+  #grain { position: fixed; inset: -20%; z-index: 1; pointer-events: none; opacity: 0.085; mix-blend-mode: screen; background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='140'%20height='140'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.9'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 140px 140px; animation: grain 1.1s steps(3) infinite; }
+  @keyframes grain { 0% { transform: translate(0,0); } 33% { transform: translate(-2%,1.5%); } 66% { transform: translate(1.5%,-2%); } 100% { transform: translate(0,0); } }
+  #vignette { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at 50% 44%, transparent 36%, rgba(6,4,2,0.62) 100%); box-shadow: inset 0 0 220px rgba(0,0,0,0.75); }
+  #bar-top, #bar-bottom { position: fixed; left: 0; right: 0; height: 3.4vh; z-index: 5; pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0)); }
+  #bar-top { top: 0; } #bar-bottom { bottom: 0; transform: scaleY(-1); }
 </style>
 </head>
 <body>
   <canvas id="stars"></canvas>
+  <div id="vignette"></div>
+  <div id="grain"></div>
+  <div id="bar-top"></div>
+  <div id="bar-bottom"></div>
   <div id="flower-layer"></div>
   <div id="hud"></div>
   <div id="controls">
@@ -178,6 +194,8 @@
       <div class="sub">填好密钥后，治愈文案会变成 AI 真实生成的「嘴替 / 微童话」。留空则用本地文案库。</div>
       <div class="row"><label>大模型</label>
         <select id="cfg-provider">
+          <option value="openrouter">OpenRouter（推荐·支持浏览器直连）</option>
+          <option value="siliconflow">SiliconFlow（硅基流动·国内直连）</option>
           <option value="deepseek">DeepSeek</option>
           <option value="openai">OpenAI</option>
           <option value="kimi">Kimi（月之暗面）</option>
@@ -190,7 +208,7 @@
         <label class="switch"><input id="cfg-use" type="checkbox" /><span class="slider"></span></label>
       </div>
       <button class="primary" id="cfg-save">保存设置</button>
-      <div class="panel-note">浏览器直连大模型接口可能受跨域（CORS）限制：若保存后文案仍不更新，多半是该平台不允许浏览器直接调用。可把「自定义地址」填成支持 CORS 的中转或自建代理。任何失败都会自动回退本地文案，不影响正常使用。</div>
+      <div class="panel-note">⚠️ <b>跨域提醒</b>：DeepSeek / OpenAI / Kimi <b>不允许网页在浏览器里直连</b>（会被 CORS 拦截，文案仍走本地库）。想让 AI 真正生成文案，请用 <b>OpenRouter</b>（openrouter.ai 免费注册，浏览器直连可用）或 <b>SiliconFlow</b>；也可在「自定义地址」填一个支持 CORS 的中转 / Cloudflare 代理（见 README）。任何失败都会自动回退本地文案，不影响使用。</div>
     </div>
   </div>
 
@@ -255,8 +273,8 @@ function renderQuiz() {
 }
 function openOnboarding() { Object.keys(answers).forEach(k => delete answers[k]); renderQuiz(); document.getElementById("quiz-done").disabled = true; document.getElementById("onboarding").classList.remove("hidden"); }
 document.getElementById("quiz-done").onclick = () => { selfState.setting = { ...answers }; saveSelf(selfState); document.getElementById("onboarding").classList.add("hidden"); applySetting(); computeWeather(); hint.textContent = "宇宙已成形，开始书写吧 ✦"; setTimeout(() => hint.textContent = defaultHint, 3500); };
-const WEATHER_BG = { sunny: ["#0a0f24","#1a1530"], cloudy: ["#0a0c12","#1a1d24"], rainy: ["#05080f","#0c1620"], snowy: ["#0a0e16","#1a2230"] };
-const LIGHT_GLOW = { warm: "#ffd6a0", moon: "#9fc4ff", fire: "#ffd86b", aurora: "#8fffd0" };
+const WEATHER_BG = { sunny: ["#1c140d","#2a1f14"], cloudy: ["#14110d","#221d16"], rainy: ["#0e1216","#161d22"], snowy: ["#14161c","#222a33"] };
+const LIGHT_GLOW = { warm: "#e8c07a", moon: "#cdb8ff", fire: "#e8b96b", aurora: "#9be0c0" };
 let params = { starCount: 240, ambientRain: 0, warmGlow: false };
 function applySetting() {
   const s = viewSetting() || { weather: "sunny", light: "moon", night: "stars", mood: "lively" };
@@ -264,7 +282,7 @@ function applySetting() {
   document.documentElement.style.setProperty("--bg-top", bg[0]); document.documentElement.style.setProperty("--bg-bottom", bg[1]); document.documentElement.style.setProperty("--glow", glow);
   params.starCount = s.mood === "quiet" ? 130 : 260; params.ambientRain = (s.night === "rain") ? 0.22 : 0; params.warmGlow = s.night === "lamp"; rebuildStars();
 }
-function rebuildStars() { stars.length = 0; for (let i = 0; i < params.starCount; i++) stars.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*1.4+0.3, a: Math.random(), da: (Math.random()*0.015+0.004)*(Math.random()<0.5?1:-1) }); }
+function rebuildStars() { stars.length = 0; for (let i = 0; i < params.starCount; i++) stars.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*1.5+0.3, a: Math.random(), da: (Math.random()*0.015+0.004)*(Math.random()<0.5?1:-1), col: Math.random()<0.22 ? "255,222,176" : "242,236,222" }); }
 
 /* ---------- ③ 画布 ---------- */
 const canvas = document.getElementById("stars"); const ctx = canvas.getContext("2d"); let W, H;
@@ -293,10 +311,10 @@ function drawHistory() {
   const byTheme = {}; for (const r of recs) (byTheme[r.theme] = byTheme[r.theme] || []).push(r);
   for (const [theme, list] of Object.entries(byTheme)) {
     if (list.length < 3) continue; list.sort((a, b) => a.ts - b.ts);
-    ctx.strokeStyle = "rgba(143,211,255,0.18)"; ctx.lineWidth = 1; ctx.setLineDash([2, 6]); ctx.beginPath();
+    ctx.strokeStyle = "rgba(232,192,122,0.2)"; ctx.lineWidth = 1; ctx.setLineDash([2, 6]); ctx.beginPath();
     list.forEach((r, i) => { const x = r.nx*W, y = r.ny*H; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]);
-    for (const r of list) { const x = r.nx*W, y = r.ny*H; ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI*2); ctx.fillStyle = "rgba(180,220,255,0.55)"; ctx.fill(); }
-    const last = list[list.length - 1]; ctx.fillStyle = "rgba(160,210,255,0.5)"; ctx.font = "11px sans-serif"; ctx.fillText(`${THEME_LABEL[theme]}·已连 ${list.length} 颗`, last.nx*W + 8, last.ny*H - 6);
+    for (const r of list) { const x = r.nx*W, y = r.ny*H; ctx.beginPath(); ctx.arc(x, y, 2.4, 0, Math.PI*2); ctx.fillStyle = "rgba(232,200,150,0.6)"; ctx.fill(); }
+    const last = list[list.length - 1]; ctx.fillStyle = "rgba(232,200,150,0.55)"; ctx.font = "11px sans-serif"; ctx.fillText(`${THEME_LABEL[theme]}·已连 ${list.length} 颗`, last.nx*W + 8, last.ny*H - 6);
   }
   if (params.warmGlow) { const g = ctx.createRadialGradient(W/2, H, 0, W/2, H, H*0.7); g.addColorStop(0, "rgba(255,200,140,0.05)"); g.addColorStop(1, "rgba(255,200,140,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
 }
@@ -311,10 +329,11 @@ function spawnBudRain() { const bx = W/2; for (let i = 0; i < 34; i++) budRain.p
 
 function loop() {
   ctx.clearRect(0, 0, W, H);
+  const cg = ctx.createRadialGradient(W/2, H*0.56, 0, W/2, H*0.56, Math.max(W,H)*0.72); cg.addColorStop(0, "rgba(232,192,122,0.06)"); cg.addColorStop(1, "rgba(232,192,122,0)"); ctx.fillStyle = cg; ctx.fillRect(0, 0, W, H);
   weather.rain += (weatherTarget.rain - weather.rain) * 0.02; weather.aurora += (weatherTarget.aurora - weather.aurora) * 0.02;
   if (weather.aurora > 0.02) drawAurora(weather.aurora);
   if (weather.rain > 0.02) drawRain(weather.rain);
-  for (const s of stars) { s.a += s.da; if (s.a > 1) { s.a = 1; s.da *= -1; } if (s.a < 0.12) { s.a = 0.12; s.da *= -1; } ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fillStyle = `rgba(255,255,255,${s.a})`; ctx.fill(); }
+  for (const s of stars) { s.a += s.da; if (s.a > 1) { s.a = 1; s.da *= -1; } if (s.a < 0.12) { s.a = 0.12; s.da *= -1; } ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fillStyle = `rgba(${s.col},${s.a})`; ctx.fill(); if (s.r > 1.1) { ctx.beginPath(); ctx.arc(s.x, s.y, s.r*3.4, 0, Math.PI*2); ctx.fillStyle = `rgba(${s.col},${s.a*0.07})`; ctx.fill(); } }
   drawHistory();
   drawCompanions();
   drawBud();
@@ -364,7 +383,7 @@ function drawGarden() {
     ctx.beginPath(); ctx.arc(x + sway, baseY - h, 3.2, 0, Math.PI * 2); ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0;
   }
 }
-function drawRain(intensity) { const n = Math.floor(rainDrops.length * intensity); ctx.strokeStyle = "rgba(170,190,220,0.35)"; ctx.lineWidth = 1; for (let i = 0; i < n; i++) { const d = rainDrops[i]; ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 1.5, d.y + d.len); ctx.stroke(); d.y += d.sp; d.x -= 0.4; if (d.y > H) { d.y = -10; d.x = Math.random()*W; } } }
+function drawRain(intensity) { const n = Math.floor(rainDrops.length * intensity); ctx.strokeStyle = "rgba(200,196,182,0.32)"; ctx.lineWidth = 1; for (let i = 0; i < n; i++) { const d = rainDrops[i]; ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 1.5, d.y + d.len); ctx.stroke(); d.y += d.sp; d.x -= 0.4; if (d.y > H) { d.y = -10; d.x = Math.random()*W; } } }
 function drawAurora(intensity) { ctx.save(); ctx.globalCompositeOperation = "lighter"; const bands = [{ y: H*0.12, col: "120,255,200", amp: 26 },{ y: H*0.18, col: "160,180,255", amp: 34 },{ y: H*0.24, col: "200,150,255", amp: 22 }]; const t = Date.now()/2600; for (const b of bands) { ctx.beginPath(); for (let x = 0; x <= W; x += 12) { const y = b.y + Math.sin(x/160 + t)*b.amp + Math.sin(x/70 - t*1.4)*8; x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } const g = ctx.createLinearGradient(0, b.y - 40, 0, b.y + 40); g.addColorStop(0, `rgba(${b.col},0)`); g.addColorStop(0.5, `rgba(${b.col},${0.12*intensity})`); g.addColorStop(1, `rgba(${b.col},0)`); ctx.strokeStyle = g; ctx.lineWidth = 50; ctx.stroke(); } ctx.restore(); }
 function launchFirework(x, y) { const palette = ["#ff6b9d","#ffd86b","#8fd3ff","#b6ff9d","#d99dff","#ff9d6b"]; const color = palette[Math.floor(Math.random()*palette.length)]; const count = 64 + Math.floor(Math.random()*32), parts = []; for (let i = 0; i < count; i++) { const ang = Math.random()*Math.PI*2, sp = 1 + Math.random()*4.2; parts.push({ x, y, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp, life: 1, decay: 0.012+Math.random()*0.01, color }); } fireworks.push({ parts }); }
 function updateFireworks() { for (const fw of fireworks) { for (const p of fw.parts) { p.x += p.vx; p.y += p.vy; p.vy += 0.03; p.vx *= 0.985; p.vy *= 0.985; p.life -= p.decay; if (p.life > 0) { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill(); } } fw.parts = fw.parts.filter(p => p.life > 0); } fireworks = fireworks.filter(fw => fw.parts.length > 0); ctx.globalAlpha = 1; }
@@ -393,21 +412,24 @@ const LEXICON = { negative: ["烦恼","烦","难过","伤心","心碎","焦虑",
 function detectMoodLocal(text) { if (!text.trim()) return "empty"; let neg = 0, pos = 0; for (const w of LEXICON.negative) if (text.includes(w)) neg++; for (const w of LEXICON.positive) if (text.includes(w)) pos++; if (neg && pos) return neg >= pos ? "negative" : "positive"; if (neg) return "negative"; if (pos) return "positive"; return "neutral"; }
 function llmEndpoint() {
   if (CONFIG.llmBaseUrl) return CONFIG.llmBaseUrl.replace(/\/$/, "") + "/chat/completions";
-  if (CONFIG.llmProvider === "openai") return "https://api.openai.com/v1/chat/completions";
-  if (CONFIG.llmProvider === "kimi") return "https://api.moonshot.cn/v1/chat/completions";
-  if (CONFIG.llmProvider === "deepseek") return "https://api.deepseek.com/v1/chat/completions";
-  return "https://api.openai.com/v1/chat/completions";
+  const base = { openai: "https://api.openai.com/v1", kimi: "https://api.moonshot.cn/v1", deepseek: "https://api.deepseek.com/v1", openrouter: "https://openrouter.ai/api/v1", siliconflow: "https://api.siliconflow.cn/v1" };
+  return (base[CONFIG.llmProvider] || base.openai) + "/chat/completions";
 }
 function llmModelName() {
   if (CONFIG.llmModel) return CONFIG.llmModel;
-  return ({ openai: "gpt-4o-mini", kimi: "moonshot-v1-8k", deepseek: "deepseek-chat" })[CONFIG.llmProvider] || "gpt-4o-mini";
+  return ({ openai: "gpt-4o-mini", kimi: "moonshot-v1-8k", deepseek: "deepseek-chat", openrouter: "deepseek/deepseek-chat", siliconflow: "Qwen/Qwen2.5-7B-Instruct" })[CONFIG.llmProvider] || "gpt-4o-mini";
 }
 async function callLLM(messages) {
-  const res = await fetch(llmEndpoint(), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${CONFIG.apiKey}` }, body: JSON.stringify({ model: llmModelName(), messages, temperature: 0.85 }) });
+  let res;
+  try {
+    res = await fetch(llmEndpoint(), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${CONFIG.apiKey}` }, body: JSON.stringify({ model: llmModelName(), messages, temperature: 0.85 }) });
+  } catch (e) { throw new Error("NETWORK:" + (e && e.message ? e.message : String(e))); }
   if (!res.ok) throw new Error("HTTP " + res.status);
   const d = await res.json();
   return d.choices?.[0]?.message?.content || "";
 }
+function isCorsError(e) { const m = (e && e.message) || ""; return m.includes("NETWORK") || m.includes("Failed to fetch") || m.includes("CORS") || m.includes("NetworkError"); }
+function toastLLMError(e) { const msg = isCorsError(e) ? ("⚠️ 浏览器跨域拦截了「" + CONFIG.llmProvider + "」直连——改用 OpenRouter（支持浏览器直连）即可，详见 ⚙️ 说明") : ("⚠️ 大模型调用失败（" + (e && e.message ? e.message : e) + "），已用本地文案兜底"); hint.textContent = msg; setTimeout(() => { if (input.value === "") hint.textContent = defaultHint; }, 5200); }
 async function detectMoodLLM(text) {
   try { const ans = (await callLLM([{ role: "user", content: `判断下面这句话的情绪，只回复 negative / positive / neutral 其中一个词，不要解释。句子：${text}` }])).toLowerCase(); return ans.includes("neg") ? "negative" : ans.includes("pos") ? "positive" : "neutral"; } catch (e) { return detectMoodLocal(text); }
 }
@@ -505,7 +527,7 @@ async function showContent(sub, text, theme) {
       if (theme === "self") user += "\n另外这是一次'自我怀疑'，请再补一句写给 TA 的、提醒 TA 曾跨越过类似时刻的鼓励（与前一句空一行）。";
       const out = (await callLLM([{ role: "system", content: sys }, { role: "user", content: user }])).trim();
       if (out) el.textContent = out;
-    } catch (e) { /* 生成式文案已兜底 */ }
+    } catch (e) { toastLLMError(e); }
   }
 }
 function hideContent() { const el = document.getElementById("content"); el.classList.remove("show"); }
@@ -608,7 +630,7 @@ async function openSummary() {
     try {
       const out = (await callLLM([{ role: "system", content: "你是诗人，根据用户过去七天的情绪记录，写一句中文短诗（不超过40字），温柔克制，不要标点堆砌。" }, { role: "user", content: `本周记录 ${s.n} 条，暖光 ${s.pos} 次，雨天 ${s.neg} 次，高频主题「${s.topTheme ? THEME_LABEL[s.topTheme[0]] : "日常"}」。` }])).trim();
       if (out) { poemEl.textContent = out; noteEl.textContent = "✨ 这句由大模型为你写成。"; }
-    } catch (e) {}
+    } catch (e) { toastLLMError(e); }
   }
   document.getElementById("summary-panel").classList.remove("hidden");
 }
@@ -650,7 +672,9 @@ document.getElementById("cfg-save").onclick = () => {
   CONFIG.useLLM = document.getElementById("cfg-use").checked;
   saveCfg();
   document.getElementById("settings-panel").classList.add("hidden");
-  hint.textContent = CONFIG.useLLM && CONFIG.apiKey ? "大模型已启用 · 治愈文案将由 AI 生成 ✨" : "设置已保存（未启用大模型，使用本地文案）";
+  let msg = CONFIG.useLLM && CONFIG.apiKey ? "大模型已启用 · 治愈文案将由 AI 生成 ✨" : "设置已保存（未启用大模型，使用本地文案）";
+  if (CONFIG.useLLM && CONFIG.apiKey && ["deepseek","openai","kimi"].includes(CONFIG.llmProvider)) msg = "已启用「" + CONFIG.llmProvider + "」· 注意：浏览器直连可能被跨域拦截，若文案仍是本地生成，建议改用 OpenRouter（支持浏览器直连）";
+  hint.textContent = msg;
   setTimeout(() => hint.textContent = defaultHint, 3500);
 };
 document.getElementById("summary").onclick = openSummary;
