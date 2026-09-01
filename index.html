@@ -92,6 +92,10 @@
   .close-x { float: right; cursor: pointer; color: var(--ink-soft); font-size: 18px; line-height: 1; }
   .close-x:hover { color: var(--ink); }
   .panel-note { font-size: 11.5px; color: var(--ink-soft); line-height: 1.7; margin-top: 6px; }
+  .play-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+  .play-grid button { padding: 13px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.05); color: var(--ink); cursor: pointer; font-size: 14px; transition: all .2s; }
+  .play-grid button:hover { border-color: rgba(143,211,255,0.5); }
+  #play-result { margin-top: 14px; font-size: 13.5px; line-height: 1.85; color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; min-height: 42px; }
 </style>
 </head>
 <body>
@@ -103,6 +107,7 @@
     <button id="summary" title="本周情绪小结">🌿</button>
     <button id="constellation" title="我的星座时间线">📜</button>
     <button id="settings" title="设置（接入大模型）">⚙️</button>
+    <button id="play" title="玩法 · 抽卡 / 漂流瓶 / 地球任务">🎲</button>
     <button id="export" title="导出当前星球">📤</button>
     <button id="planets" title="星球 · 分享 · 导入">👥</button>
     <button id="reset" title="重置当前星球">🗑</button>
@@ -186,6 +191,23 @@
       </div>
       <button class="primary" id="cfg-save">保存设置</button>
       <div class="panel-note">浏览器直连大模型接口可能受跨域（CORS）限制：若保存后文案仍不更新，多半是该平台不允许浏览器直接调用。可把「自定义地址」填成支持 CORS 的中转或自建代理。任何失败都会自动回退本地文案，不影响正常使用。</div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="play-panel">
+    <div class="card">
+      <span class="close-x" data-close="play-panel">×</span>
+      <h2>玩法 · 让宇宙陪你玩</h2>
+      <div class="sub">输入情绪之外，这里还有些随机的小惊喜，全本地生成，无需联网。</div>
+      <div class="play-grid">
+        <button id="p-divine">🔮 今日星象</button>
+        <button id="p-bottle">🫧 漂流瓶</button>
+        <button id="p-quest">📜 地球任务</button>
+        <button id="p-spin">🎲 掷星轮盘</button>
+      </div>
+      <div class="row" style="margin-top:14px"><input id="p-wish" type="text" autocomplete="off" placeholder="写个愿望，托付给流星…" /><button id="p-wish-go" class="icon-btn" title="许愿">🌠</button></div>
+      <div id="play-result"></div>
+      <div class="panel-note">占卜 / 任务 / 漂流瓶都来自本地随机生成；接上大模型后，输入情绪的文案会更像「真人」。点已连成线的星座节点，还能点亮那次记录。</div>
     </div>
   </div>
 
@@ -296,6 +318,7 @@ function loop() {
   drawHistory();
   drawCompanions();
   drawBud();
+  drawGarden();
   if (Math.random() < 0.004 && bgMeteors.length < 2) bgMeteors.push({ x: Math.random()*W, y: Math.random()*H*0.5, vx: 2+Math.random()*2, vy: 1+Math.random(), life: 1 });
   bgMeteors = bgMeteors.filter(m => { m.x += m.vx; m.y += m.vy; m.life -= 0.012; if (m.life <= 0 || m.x > W || m.y > H) return false; const g = ctx.createLinearGradient(m.x, m.y, m.x - m.vx*12, m.y - m.vy*12); g.addColorStop(0, `rgba(255,255,255,${m.life})`); g.addColorStop(1, "rgba(255,255,255,0)"); ctx.strokeStyle = g; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(m.x - m.vx*12, m.y - m.vy*12); ctx.stroke(); return true; });
   if (meteor) {
@@ -325,6 +348,21 @@ function drawBud() {
   // 春雨精准落向花苞
   ctx.strokeStyle = "rgba(150,200,255,0.5)"; ctx.lineWidth = 1.2;
   budRain = budRain.filter(d => { d.y += d.speed; ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 1, d.y + 12); ctx.stroke(); return d.y < d.ty; });
+}
+// 种子花园：正面/喜悦记录越多，底部花园越茂盛（随时间生长）
+function drawGarden() {
+  const recs = viewRecords(); const pos = recs.filter(r => r.mood === "positive");
+  const n = Math.min(pos.length, 40); if (!n) return;
+  const baseY = H - 18; const cols = ["#ffd6f0", "#ffe39a", "#b6ffcf", "#cdb8ff", "#9fe0ff"];
+  for (let i = 0; i < n; i++) {
+    const x = (W / (n + 1)) * (i + 1) + Math.sin(i * 1.7) * 10;
+    const sway = Math.sin(Date.now() / 1400 + i) * 3;
+    const h = 9 + (i % 5) * 3.2;
+    ctx.strokeStyle = "rgba(150,220,160,0.45)"; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(x, baseY); ctx.quadraticCurveTo(x + sway, baseY - h * 0.6, x + sway, baseY - h); ctx.stroke();
+    const col = cols[i % cols.length];
+    ctx.beginPath(); ctx.arc(x + sway, baseY - h, 3.2, 0, Math.PI * 2); ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0;
+  }
 }
 function drawRain(intensity) { const n = Math.floor(rainDrops.length * intensity); ctx.strokeStyle = "rgba(170,190,220,0.35)"; ctx.lineWidth = 1; for (let i = 0; i < n; i++) { const d = rainDrops[i]; ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 1.5, d.y + d.len); ctx.stroke(); d.y += d.sp; d.x -= 0.4; if (d.y > H) { d.y = -10; d.x = Math.random()*W; } } }
 function drawAurora(intensity) { ctx.save(); ctx.globalCompositeOperation = "lighter"; const bands = [{ y: H*0.12, col: "120,255,200", amp: 26 },{ y: H*0.18, col: "160,180,255", amp: 34 },{ y: H*0.24, col: "200,150,255", amp: 22 }]; const t = Date.now()/2600; for (const b of bands) { ctx.beginPath(); for (let x = 0; x <= W; x += 12) { const y = b.y + Math.sin(x/160 + t)*b.amp + Math.sin(x/70 - t*1.4)*8; x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } const g = ctx.createLinearGradient(0, b.y - 40, 0, b.y + 40); g.addColorStop(0, `rgba(${b.col},0)`); g.addColorStop(0.5, `rgba(${b.col},${0.12*intensity})`); g.addColorStop(1, `rgba(${b.col},0)`); ctx.strokeStyle = g; ctx.lineWidth = 50; ctx.stroke(); } ctx.restore(); }
@@ -380,7 +418,7 @@ function subMood(text, mood) {
   return "neutral";
 }
 
-/* ---------- ⑨ 治愈内容推送（本地库 + 可接 LLM 真实生成） ---------- */
+/* ---------- ⑨ 治愈内容推送（生成式引擎 + 可接 LLM 真实生成） ---------- */
 const CONTENT = {
   anger: ["行，这破事配得上你一句脏话，骂完咱翻篇。","它要是个人，已经被你骂进小黑屋了——解气了吗？","建议把今天的不爽折成纸飞机，发射，biu——","你的怒气值已到账，系统温馨提示：不值得为它续费。","深呼吸。这口气吐出去，就归宇宙管了。"],
   anxiety: ["达尔文当年论文被拒了，现在谁还记得那个审稿人。","宇宙 138 亿岁，这件小事在它的时间轴里连 0.1 秒都不到。","历史上无数人搞砸过同样的事，后来都忙着活下去了——你也是。","把'万一'换成'就算'：就算搞砸了，天也不会塌。","你现在踩的这块地，是无数人担心过却都站住的。"],
@@ -399,10 +437,65 @@ const CONTENT_SYS = {
   neutral: "你是温柔的陪伴者，用一句话回应，不评判。",
   self: "你是用户曾经写给自己的鼓励者，用一句温暖有力的话提醒 TA：这种情绪 TA 早就经历并跨越过。"
 };
+
+/* ===== 生成式内容引擎：词库 + 模板 + 随机组合，几乎不重复，无需联网 ===== */
+const BANK = {
+  animal: ["迷路的小狐狸","生锈的铁皮机器人","害羞的云朵","走丢的纸船","戴帽子的猫","不爱说话的仙人掌","迷路的萤火虫","迟到的流星","怕黑的小怪兽","断了线的风筝","困在玻璃里的鲸","丢了影子的孩子"],
+  place: ["棉花糖做的山谷","会发光的森林","倒过来的城市","没有钟的村庄","海边的旧灯塔","云层之上的车站","长满蘑菇的院子","被遗忘的阁楼","星星沉底的湖","风一吹就响的峡谷","凌晨三点的便利店","落满信的屋顶"],
+  obj: ["一颗会发芽的纽扣","半截铅笔","温热的玻璃弹珠","一片写着字的叶子","褪色的电影票","一把生锈的钥匙","一封没寄出的信","一盏小灯","一块会发光的石头","一只空瓶子","半块方糖","一枚旧硬币"],
+  turn: ["于是它决定不再赶路","它把今天的不开心折成了纸船","它终于敢在月光下唱歌","它把秘密告诉了风","它学会了和影子做朋友","它原谅了那场雨","它把孤独酿成了蜜","它发现黑暗里也有星星","它把名字写进了年轮","它给后来的人留了盏灯"],
+  go: ["顺着银河漂回了家","在黎明前找到了方向","绕着星球飞了三圈","在云里睡了个好觉","把故事藏进了树洞","朝远方亮了一下","偷偷许了个愿","把灯留给了迷路的人"],
+  bless: ["愿你今天也被温柔接住。","你已经足够好了，真的。","慢一点也没关系。","宇宙替你记着这些光。","你不是一个人走夜路。","把今天的好，收进口袋。","明天会有新的星亮起来。"]
+};
+const ROAST = [
+  "「{x}」这种事，配得上你一句脏话，骂完咱翻篇。",
+  "要是{x}是个人，已经被你骂进小黑屋了——解气了吗？",
+  "建议把今天对{x}的不爽，折成纸飞机，发射，biu——",
+  "{x}这口气，吐出去就归宇宙管了，不值得替它续费。",
+  "行，{x}配得上一句国骂，骂完这页就翻了。",
+  "跟{x}较劲，不如跟今晚的月亮干一杯。"
+];
+const PARALLEL = [
+  "达尔文当年论文被拒，审稿人说他'想法古怪'。现在谁还记得那个审稿人？",
+  "J·K·罗琳被退稿 12 次，编辑说'儿童文学没市场'。后来哈利·波特卖了五亿本。",
+  "乔布斯 30 岁被自己请来的 CEO 赶出苹果，在停车场掉眼泪。十二年后他回来了。",
+  "爱因斯坦九岁说话还不利索，老师以为他迟钝。后来他重新定义了时间。",
+  "梵高生前只卖出一幅画，还是弟弟偷偷帮忙。现在他的向日葵值四个亿。",
+  "马云面试肯德基被拒，三十人录了二十九个，没有他。后来他造了个帝国。",
+  "王心凌当年被群嘲'过气'，多年后一首歌又把全场唱哭了。",
+  "褚时健 71 岁保外就医，包下荒山种橙子，84 岁成了'橙王'。"
+];
+const CARD_FACE = ["🌟","🌙","🔥","🌊","🌿","🪐","✨","🌈","🕊️","💫","🌌","❄️"];
+const CARD_TEXT = [
+  "今天的你，适合慢下来。","有一束光，正绕过云来找你。","你以为的尽头，也许是个转弯。","宇宙在帮你存着好运。","此刻的安静，也是一种答案。","你正在变成更软一点的自己。","有些花开，要等一场雨。","今晚的星，有一颗是专门为你亮的。","你比昨天多撑了一会儿，这就够。","把重的心，先放下一格。"
+];
+const CARD_ACTION = [
+  "去做一件小事，然后夸自己一下。","给一个人发句'在吗'。","把烦恼写成一句话，然后放下。","今天允许自己什么都不做。","对着夜空，说声谢谢。","给未来的自己写一句话，存进这里。"
+];
+const QUEST = {
+  title: ["支线任务 · 微光","日常委托 · 问候","隐藏任务 · 独处","限定任务 · 善意","主线推进 · 休息","彩蛋任务 · 记录"],
+  target: ["向一位很久没联系的朋友发一句问候","今天比平时早睡 30 分钟，给身体充电","做一件不问回报的小善事","把一件闲置的东西送出去或扔掉","对着窗外发呆 5 分钟，什么也不想","给三个月后的自己写一句话，存进这个宇宙"],
+  reward: ["+5 社交经验","+3 体力上限","+8 善意值","+2 空间清爽度","+10 平静","+1 未知道具"]
+};
 const pick = a => a[Math.floor(Math.random() * a.length)];
+function firstNoun(text) { return (text.replace(/\s/g, "").slice(0, 8)) || "这破事"; }
+function genFairytale() { return `${pick(BANK.animal)}住在${pick(BANK.place)}。有一天，它捡到了${pick(BANK.obj)}。${pick(BANK.turn)}，最后${pick(BANK.go)}。`; }
+function genPoem() { return `${pick(BANK.turn)}——${pick(BANK.go)}。${pick(BANK.bless)}`; }
+function genRoast(text) { return pick(ROAST).replace("{x}", firstNoun(text)); }
+function genParallel() { return pick(PARALLEL); }
+function genQuest() { return `【${pick(QUEST.title)}】\n目标：${pick(QUEST.target)}\n奖励：${pick(QUEST.reward)}`; }
+function genCard() { return { face: pick(CARD_FACE), text: pick(CARD_TEXT), action: pick(CARD_ACTION) }; }
+// 根据情绪细分，生成「这一次」的回应（每次随机，不重复）
+function genResponse(sub, text) {
+  if (sub === "anger") return genRoast(text);
+  if (sub === "anxiety") return genParallel();
+  if (sub === "joy") return genFairytale();
+  if (sub === "celebrate") return pick(CONTENT.celebrate) + " " + pick(BANK.bless);
+  return genPoem();
+}
 async function showContent(sub, text, theme) {
   const el = document.getElementById("content");
-  let base = pick(CONTENT[sub] || CONTENT.neutral);
+  let base = genResponse(sub, text);
   if (theme === "self" && (sub === "anxiety" || sub === "anger")) base += " " + pick(SELF_PEER);
   el.textContent = base; el.classList.add("show");
   if (CONFIG.useLLM && CONFIG.apiKey && text) {
@@ -412,7 +505,7 @@ async function showContent(sub, text, theme) {
       if (theme === "self") user += "\n另外这是一次'自我怀疑'，请再补一句写给 TA 的、提醒 TA 曾跨越过类似时刻的鼓励（与前一句空一行）。";
       const out = (await callLLM([{ role: "system", content: sys }, { role: "user", content: user }])).trim();
       if (out) el.textContent = out;
-    } catch (e) { /* 保留本地文案 */ }
+    } catch (e) { /* 生成式文案已兜底 */ }
   }
 }
 function hideContent() { const el = document.getElementById("content"); el.classList.remove("show"); }
@@ -564,8 +657,57 @@ document.getElementById("summary").onclick = openSummary;
 document.getElementById("constellation").onclick = openConstellation;
 document.getElementById("settings").onclick = openSettings;
 
+/* ---------- ⑬ 玩法系统：占卜 / 漂流瓶 / 地球任务 / 掷星 / 许愿流星 / 点亮星图 ---------- */
+const KEY_WISH = "eu-wishes";
+function loadWishes() { try { return JSON.parse(localStorage.getItem(KEY_WISH)) || []; } catch (e) { return []; } }
+function saveWishes(w) { localStorage.setItem(KEY_WISH, JSON.stringify(w)); }
+function showPlayResult(txt) { document.getElementById("play-result").innerHTML = txt.replace(/\n/g, "<br>"); }
+function openPlay() { document.getElementById("play-panel").classList.remove("hidden"); }
+document.getElementById("play").onclick = openPlay;
+document.getElementById("p-divine").onclick = () => { const c = genCard(); showPlayResult(`${c.face} <b>今日星象</b><br>${c.text}<br><span style="opacity:.7">行动：${c.action}</span>`); };
+document.getElementById("p-bottle").onclick = () => {
+  const all = selfState.records.concat(...friends.map(f => f.records));
+  if (!all.length) { showPlayResult("还没有漂流瓶。先在输入框写下点什么，它们会变成漂在宇宙里的瓶子。"); return; }
+  const r = pick(all); const src = selfState.records.includes(r) ? "过去的你" : "某颗星球";
+  const safe = r.text.replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+  showPlayResult(`🫧 你捞起一只漂流瓶，来自【${src}】<br>${fmtDate(r.ts)}：${safe}<br><span style="opacity:.7">—— 今天的你，想起它了吗？</span>`);
+};
+document.getElementById("p-quest").onclick = () => showPlayResult(genQuest());
+const SPIN = ["微童话", "诗", "签", "地球任务", "流星", "花", "陨石"];
+function playSpin() {
+  const result = document.getElementById("play-result"); let ticks = 0;
+  const iv = setInterval(() => { result.innerHTML = `🎲 轮盘转向… <b>${pick(SPIN)}</b>`; if (++ticks > 9) {
+    clearInterval(iv); const land = pick(SPIN); let out;
+    if (land === "微童话") out = genFairytale();
+    else if (land === "诗") out = genPoem();
+    else if (land === "签") { const c = genCard(); out = `${c.face} ${c.text}<br>行动：${c.action}`; }
+    else if (land === "地球任务") out = genQuest();
+    else if (land === "流星") { launchFirework(W * (0.3 + Math.random() * 0.4), H * 0.25); out = "🎆 一朵烟花为你升起。"; }
+    else if (land === "花") { bloomFlower(); out = "🌸 一朵花在心中开了。"; }
+    else { spawnMeteor(W * 0.5, H * 0.2); out = "☄️ 一颗陨石带走了什么。"; }
+    showPlayResult(`🎲 本轮抽到：【${land}】<br>${out}`);
+  } }, 90);
+}
+document.getElementById("p-spin").onclick = playSpin;
+document.getElementById("p-wish-go").onclick = () => {
+  const v = document.getElementById("p-wish").value.trim(); if (!v) { hint.textContent = "先写个愿望，再托付给流星 🌠"; return; }
+  const w = loadWishes(); w.push({ text: v, ts: Date.now(), echoTs: Date.now() + 3 * 86400000, echoed: false }); saveWishes(w);
+  spawnMeteor(W * 0.5, H * 0.18); beep("meteor"); document.getElementById("p-wish").value = "";
+  hint.textContent = "愿望已托付给流星，三天后回响 ✦"; setTimeout(() => { if (input.value === "") hint.textContent = defaultHint; }, 4000);
+};
+canvas.addEventListener("click", e => {
+  const rect = canvas.getBoundingClientRect(); const x = e.clientX - rect.left, y = e.clientY - rect.top;
+  const recs = viewRecords(); const byTheme = {}; for (const r of recs) (byTheme[r.theme] = byTheme[r.theme] || []).push(r);
+  for (const [theme, list] of Object.entries(byTheme)) { if (list.length < 3) continue; for (const r of list) { const sx = r.nx * W, sy = r.ny * H; if (Math.hypot(sx - x, sy - y) < 16) { openPlay(); const safe = r.text.replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c])); showPlayResult(`✨ <b>${THEME_LABEL[theme]}·已连 ${list.length} 颗</b><br>${fmtDate(r.ts)}：${safe}`); return; } } }
+});
+function checkWishes() {
+  const w = loadWishes(); const due = w.filter(x => !x.echoed && x.echoTs <= Date.now());
+  if (due.length) { due[0].echoed = true; saveWishes(w); setTimeout(() => { hint.textContent = `🌠 你曾许愿：「${due[0].text}」—— 它的回响是：你还在，就很好。`; setTimeout(() => { if (input.value === "") hint.textContent = defaultHint; }, 6000); }, 1600); }
+}
+
 /* 启动 */
 loadCfg();
+checkWishes();
 if (!selfState.setting) { openOnboarding(); }
 else { refreshView(); if (!localStorage.getItem(KEY_SEEN) && !selfState.records.length) { hint.textContent = "提示：双击页面底部小字可填充 7 天示例；点 👥 可分享宇宙给朋友 ✨"; localStorage.setItem(KEY_SEEN, "1"); setTimeout(() => { if (input.value === "") hint.textContent = defaultHint; }, 9000); } }
 
