@@ -12,11 +12,13 @@
 <link rel="apple-touch-icon" href="icon-512.png" />
 <style>
   :root {
-    --bg-top: #0e0a07;        /* 深暖炭黑（复古） */
-    --bg-bottom: #1c140d;     /* 暖棕黑 */
-    --ink: rgba(240,231,216,0.92);    /* 暖白（胶片感） */
-    --ink-soft: rgba(228,216,198,0.46);
-    --glow: #e8c07a;          /* 暖金（主点缀） */
+    --bg-top: #161009;        /* 极暗暖棕（照片暗部 #2e281d 压暗） */
+    --bg-bottom: #2a2417;     /* 暖棕带灰绿（照片中间调 #76765f 压暗） */
+    --ink: rgba(238,230,214,0.92);    /* 暖白（胶片感） */
+    --ink-soft: rgba(212,200,180,0.46);
+    --glow: #e3c184;          /* 暖金（核心光，照片亮部偏金） */
+    --mist: #9a9a76;          /* 灰绿点缀（照片中间调） */
+    --accent: #c9a36b;        /* 赭金（星座连线/强调） */
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
@@ -103,9 +105,9 @@
   .play-grid button:hover { border-color: rgba(232,192,122,0.5); }
   #play-result { margin-top: 14px; font-size: 13.5px; line-height: 1.85; color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; min-height: 42px; }
   /* —— 电影感视觉：胶片颗粒 + 暗角 + 信箱黑边 —— */
-  #grain { position: fixed; inset: -20%; z-index: 1; pointer-events: none; opacity: 0.085; mix-blend-mode: screen; background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='140'%20height='140'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.9'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 140px 140px; animation: grain 1.1s steps(3) infinite; }
+  #grain { position: fixed; inset: -20%; z-index: 1; pointer-events: none; opacity: 0.13; mix-blend-mode: screen; filter: contrast(1.45) brightness(0.92); background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='150'%20height='150'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.9'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 150px 150px; animation: grain 1.1s steps(3) infinite; }
   @keyframes grain { 0% { transform: translate(0,0); } 33% { transform: translate(-2%,1.5%); } 66% { transform: translate(1.5%,-2%); } 100% { transform: translate(0,0); } }
-  #vignette { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at 50% 44%, transparent 36%, rgba(6,4,2,0.62) 100%); box-shadow: inset 0 0 220px rgba(0,0,0,0.75); }
+  #vignette { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at 50% 42%, transparent 28%, rgba(10,7,3,0.5) 76%, rgba(3,2,1,0.9) 100%); box-shadow: inset 0 0 260px rgba(8,5,2,0.8); }
   #bar-top, #bar-bottom { position: fixed; left: 0; right: 0; height: 3.4vh; z-index: 5; pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0)); }
   #bar-top { top: 0; } #bar-bottom { bottom: 0; transform: scaleY(-1); }
 </style>
@@ -273,8 +275,8 @@ function renderQuiz() {
 }
 function openOnboarding() { Object.keys(answers).forEach(k => delete answers[k]); renderQuiz(); document.getElementById("quiz-done").disabled = true; document.getElementById("onboarding").classList.remove("hidden"); }
 document.getElementById("quiz-done").onclick = () => { selfState.setting = { ...answers }; saveSelf(selfState); document.getElementById("onboarding").classList.add("hidden"); applySetting(); computeWeather(); hint.textContent = "宇宙已成形，开始书写吧 ✦"; setTimeout(() => hint.textContent = defaultHint, 3500); };
-const WEATHER_BG = { sunny: ["#1c140d","#2a1f14"], cloudy: ["#14110d","#221d16"], rainy: ["#0e1216","#161d22"], snowy: ["#14161c","#222a33"] };
-const LIGHT_GLOW = { warm: "#e8c07a", moon: "#cdb8ff", fire: "#e8b96b", aurora: "#9be0c0" };
+const WEATHER_BG = { sunny: ["#161009","#2a2417"], cloudy: ["#191711","#241e15"], rainy: ["#0f1418","#161d22"], snowy: ["#16181e","#222a33"] };
+const LIGHT_GLOW = { warm: "#e3c184", moon: "#cdb8ff", fire: "#e8b96b", aurora: "#9be0c0" };
 let params = { starCount: 240, ambientRain: 0, warmGlow: false };
 function applySetting() {
   const s = viewSetting() || { weather: "sunny", light: "moon", night: "stars", mood: "lively" };
@@ -282,7 +284,7 @@ function applySetting() {
   document.documentElement.style.setProperty("--bg-top", bg[0]); document.documentElement.style.setProperty("--bg-bottom", bg[1]); document.documentElement.style.setProperty("--glow", glow);
   params.starCount = s.mood === "quiet" ? 130 : 260; params.ambientRain = (s.night === "rain") ? 0.22 : 0; params.warmGlow = s.night === "lamp"; rebuildStars();
 }
-function rebuildStars() { stars.length = 0; for (let i = 0; i < params.starCount; i++) stars.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*1.5+0.3, a: Math.random(), da: (Math.random()*0.015+0.004)*(Math.random()<0.5?1:-1), col: Math.random()<0.22 ? "255,222,176" : "242,236,222" }); }
+function rebuildStars() { stars.length = 0; for (let i = 0; i < params.starCount; i++) stars.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*1.5+0.3, a: Math.random(), da: (Math.random()*0.015+0.004)*(Math.random()<0.5?1:-1), col: Math.random()<0.2 ? "255,212,165" : "232,226,212" }); }
 
 /* ---------- ③ 画布 ---------- */
 const canvas = document.getElementById("stars"); const ctx = canvas.getContext("2d"); let W, H;
@@ -311,10 +313,10 @@ function drawHistory() {
   const byTheme = {}; for (const r of recs) (byTheme[r.theme] = byTheme[r.theme] || []).push(r);
   for (const [theme, list] of Object.entries(byTheme)) {
     if (list.length < 3) continue; list.sort((a, b) => a.ts - b.ts);
-    ctx.strokeStyle = "rgba(232,192,122,0.2)"; ctx.lineWidth = 1; ctx.setLineDash([2, 6]); ctx.beginPath();
+    ctx.strokeStyle = "rgba(201,163,107,0.26)"; ctx.lineWidth = 1; ctx.setLineDash([2, 6]); ctx.beginPath();
     list.forEach((r, i) => { const x = r.nx*W, y = r.ny*H; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]);
-    for (const r of list) { const x = r.nx*W, y = r.ny*H; ctx.beginPath(); ctx.arc(x, y, 2.4, 0, Math.PI*2); ctx.fillStyle = "rgba(232,200,150,0.6)"; ctx.fill(); }
-    const last = list[list.length - 1]; ctx.fillStyle = "rgba(232,200,150,0.55)"; ctx.font = "11px sans-serif"; ctx.fillText(`${THEME_LABEL[theme]}·已连 ${list.length} 颗`, last.nx*W + 8, last.ny*H - 6);
+    for (const r of list) { const x = r.nx*W, y = r.ny*H; ctx.beginPath(); ctx.arc(x, y, 2.4, 0, Math.PI*2); ctx.fillStyle = "rgba(220,196,150,0.6)"; ctx.fill(); }
+    const last = list[list.length - 1]; ctx.fillStyle = "rgba(220,196,150,0.6)"; ctx.font = "11px sans-serif"; ctx.fillText(`${THEME_LABEL[theme]}·已连 ${list.length} 颗`, last.nx*W + 8, last.ny*H - 6);
   }
   if (params.warmGlow) { const g = ctx.createRadialGradient(W/2, H, 0, W/2, H, H*0.7); g.addColorStop(0, "rgba(255,200,140,0.05)"); g.addColorStop(1, "rgba(255,200,140,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
 }
@@ -329,7 +331,7 @@ function spawnBudRain() { const bx = W/2; for (let i = 0; i < 34; i++) budRain.p
 
 function loop() {
   ctx.clearRect(0, 0, W, H);
-  const cg = ctx.createRadialGradient(W/2, H*0.56, 0, W/2, H*0.56, Math.max(W,H)*0.72); cg.addColorStop(0, "rgba(232,192,122,0.06)"); cg.addColorStop(1, "rgba(232,192,122,0)"); ctx.fillStyle = cg; ctx.fillRect(0, 0, W, H);
+  const cg = ctx.createRadialGradient(W/2, H*0.5, 0, W/2, H*0.5, Math.max(W,H)*0.7); cg.addColorStop(0, "rgba(230,205,160,0.09)"); cg.addColorStop(0.5, "rgba(232,192,122,0.035)"); cg.addColorStop(1, "rgba(232,192,122,0)"); ctx.fillStyle = cg; ctx.fillRect(0, 0, W, H);
   weather.rain += (weatherTarget.rain - weather.rain) * 0.02; weather.aurora += (weatherTarget.aurora - weather.aurora) * 0.02;
   if (weather.aurora > 0.02) drawAurora(weather.aurora);
   if (weather.rain > 0.02) drawRain(weather.rain);
